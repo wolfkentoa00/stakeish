@@ -1,4 +1,5 @@
-// ... existing code ... */
+// --- Application State ---
+// Load balance from localStorage or default to 1000
 let balance = parseFloat(localStorage.getItem('stakeishBalance')) || 1000.00;
 
 // --- CONSTANTS ---
@@ -172,8 +173,8 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ------------------------------------
 // --- GAME LOGIC ---
-// (This section is identical to the previous file,
-// as the game logic itself doesn't need to change)
+// (This section contains all the game logic,
+// which is called by initGame() after loading)
 // ------------------------------------
 
 // --- Limbo Game Logic ---
