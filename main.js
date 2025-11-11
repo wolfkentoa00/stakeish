@@ -1,10 +1,9 @@
-// --- Application State ---
-// Load balance from localStorage or default to 1000
+// ... existing code ... */
 let balance = parseFloat(localStorage.getItem('stakeishBalance')) || 1000.00;
 
 // --- CONSTANTS ---
 // Base URL for fetching game content
-const GITHUB_BASE_URL = "https://raw.githubusercontent.com/wolfkentoa00/stakeish/main";
+const GITHUB_BASE_URL = "https://cdn.jsdelivr.net/gh/wolfkentoa00/stakeish@main";
 
 // --- DOM Elements (Global) ---
 const balanceDisplay = document.getElementById('balanceDisplay');
