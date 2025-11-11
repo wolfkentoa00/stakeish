@@ -1,0 +1,31 @@
+<div id="game-scratch" class="game-container bg-[#1a2c38] rounded-lg shadow-2xl p-6 lg:p-8">
+    <h1 class="text-3xl font-bold mb-6 text-white">Scratch Off</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Game Controls -->
+        <div class="md:col-span-1 bg-[#2c4051] rounded-lg p-6 flex flex-col gap-4">
+            <div>
+                <label for="scratchBetAmount" class="block text-sm font-medium text-gray-300 mb-1">Ticket Price</label>
+                <input type="number" id="scratchBetAmount" class="game-input w-full p-2" value="5">
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('scratchBetAmount', 0.5)">/2</button>
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('scratchBetAmount', 2)">x2</button>
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('scratchBetAmount', 'max')">Max</button>
+                </div>
+            </div>
+            <button id="buyScratchButton" class="btn-bet w-full py-3 rounded-lg text-lg">
+                Buy Ticket
+            </button>
+        </div>
+
+        <!-- Scratch Card -->
+        <div class="md:col-span-2 bg-[#2c4051] rounded-lg p-6 flex items-center justify-center min-h-[200px] relative">
+            <div id="scratchInstructions" class="text-center text-gray-400">Buy a ticket to play!</div>
+            <canvas id="scratchCanvas" width="400" height="200" class="hidden"></canvas>
+            <!-- This text is *under* the canvas -->
+            <div id="scratchPrize" class="absolute text-5xl font-bold text-yellow-400" style="z-index: -1;"></div>
+        </div>
+    </div>
+    <!-- Win/Loss Message Area -->
+    <div id="scratchResult" class="text-center mt-6 text-2xl font-bold">&nbsp;</div>
+</div>
