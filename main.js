@@ -638,7 +638,7 @@ function buyScratchTicket() {
     document.getElementById('buyScratchButton').disabled = true;
     document.getElementById('scratchResult').textContent = '';
     document.getElementById('scratchInstructions').classList.add('hidden');
-    
+
     const r = Math.random();
     let prize = 0;
     if (r < 0.1) prize = betAmount * 10;
