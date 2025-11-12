@@ -20,11 +20,12 @@
 
         <!-- Scratch Card -->
         <div class="md:col-span-2 bg-[#2c4051] rounded-lg p-6 flex items-center justify-center min-h-[200px] relative">
-            <div id="scratchInstructions" class="text-center text-gray-400">Buy a ticket to play!</div>
-            <canvas id="scratchCanvas" width="400" height="200" class="hidden"></canvas>
-            <!-- This text is *under* the canvas -->
-            <div id="scratchPrize" class="absolute text-5xl font-bold text-yellow-400" style="z-index: -1;"></div>
-        </div>
+    <div id="scratchInstructions" class="text-center text-gray-400">Buy a ticket to play!</div>
+    
+    <div id="scratchPrize" class="absolute inset-0 flex items-center justify-center text-5xl font-bold text-yellow-400 hidden"></div>
+    
+    <canvas id="scratchCanvas" width="400" height="200" class="hidden relative z-10"></canvas>
+</div>
     </div>
     <!-- Win/Loss Message Area -->
     <div id="scratchResult" class="text-center mt-6 text-2xl font-bold">&nbsp;</div>
