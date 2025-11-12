@@ -1,3 +1,7 @@
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, deleteDoc, runTransaction, writeBatch } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
 // --- Application State ---
 // Load balance from localStorage or default to 1000
 let balance = parseFloat(localStorage.getItem('stakeishBalance')) || 1000.00;
@@ -787,16 +791,10 @@ const HAND_TYPES = {
 // --- initPoker: Main setup function ---
 async function initPoker() {
     // 1. Check if Firebase is available (loaded from index.html)
-    if (typeof firebase === 'undefined') {
-        showMessage("Firebase SDK not loaded. Poker is unavailable.", 'error');
-        return;
-    }
-
+    // REMOVED the "typeof firebase" check, as it's no longer valid.
+    
     // 2. Initialize Firebase
-    // These functions are from the Firebase SDK loaded in index.html
-    const { initializeApp } = firebase.app;
-    const { getAuth, signInAnonymously, onAuthStateChanged } = firebase.auth;
-    const { getFirestore, doc, getDoc, setDoc, updateDoc, onSnapshot, collection, deleteDoc, runTransaction, writeBatch } = firebase.firestore;
+    // We can use the functions directly since we imported them at the top of the file.
     
     // Config values from prompt
     const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
@@ -804,6 +802,8 @@ async function initPoker() {
     
     if (!firebaseConfig.apiKey) {
         showMessage("Firebase config missing. Poker is unavailable.", 'error');
+        // ADDED return here
+        return;
     }
 
     fbApp = initializeApp(firebaseConfig);
@@ -843,7 +843,7 @@ async function pokerCreateGame() {
     balance -= 1000;
     updateBalanceDisplay();
 
-    const { doc, setDoc, collection } = firebase.firestore;
+    // REMOVED: const { doc, setDoc, collection } = firebase.firestore;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     // Generate a 6-char random game ID
@@ -882,7 +882,7 @@ async function pokerCreateGame() {
 }
 
 async function pokerJoinGame() {
-    const { doc, getDoc, updateDoc } = firebase.firestore;
+    // REMOVED: const { doc, getDoc, updateDoc } = firebase.firestore;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     const gameId = document.getElementById('pokerJoinCode').value.toUpperCase();
@@ -966,7 +966,7 @@ function showPokerTable(show) {
 }
 
 async function pokerLeaveGame() {
-    const { doc, runTransaction } = firebase.firestore;
+    // REMOVED: const { doc, runTransaction } = firebase.firestore;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     
     if (fbGameUnsubscribe) fbGameUnsubscribe(); // Stop listening
@@ -1022,7 +1022,7 @@ async function pokerLeaveGame() {
 // --- Poker Real-Time Functions ---
 
 function subscribeToGame(gameId) {
-    const { doc, onSnapshot } = firebase.firestore;
+    // REMOVED: const { doc, onSnapshot } = firebase.firestore;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
 
     const gameRef = doc(fbDb, `artifacts/${appId}/public/data/poker`, gameId);
@@ -1198,7 +1198,7 @@ function renderActionControls(gameData) {
  * Only the "dealer" (or host) will perform the action.
  */
 async function checkGameLogic(gameData) {
-    const { doc, updateDoc } = firebase.firestore;
+    // REMOVED: const { doc, updateDoc } = firebase.firestore;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const gameRef = doc(fbDb, `artifacts/${appId}/public/data/poker`, gameData.gameId);
 
@@ -1235,7 +1235,7 @@ async function checkGameLogic(gameData) {
 // --- Poker Player Actions ---
 
 async function pokerAct(action, gameData, amount = 0) {
-    const { doc, updateDoc } = firebase.firestore;
+    // REMOVED: const { doc, updateDoc } = firebase.firestore;
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
     const gameRef = doc(fbDb, `artifacts/${appId}/public/data/poker`, gameData.gameId);
 
