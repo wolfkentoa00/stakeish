@@ -113,7 +113,7 @@ async function loadGame(gameName) {
 
     try {
         // --- THIS IS THE UPDATED LINE ---
-        const response = await fetch(`${GITHUB_BASE_URL}/${gameName}.html`);
+       const response = await fetch(`${gameName}.html`);
         
         if (!response.ok) {
             throw new Error(`Failed to load ${gameName}.html from GitHub`);
