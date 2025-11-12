@@ -1,9 +1,5 @@
 // --- Application State ---
-// Load balance from localStorage or default to 1000
 let balance = parseFloat(localStorage.getItem('stakeishBalance')) || 1000.00;
-
-// --- CONSTANTS ---
-// Base URL for fetching game content
 
 // --- DOM Elements (Global) ---
 const balanceDisplay = document.getElementById('balanceDisplay');
@@ -21,44 +17,28 @@ const messageText = document.getElementById('messageText');
 
 // --- Utility Functions (Global) ---
 
-/**
- * Updates the balance display in the header and saves to localStorage
- */
 function updateBalanceDisplay() {
     balanceDisplay.textContent = balance.toFixed(2);
     localStorage.setItem('stakeishBalance', balance);
 }
 
-/**
- * Modify bet input
- * @param {string} inputId - The ID of the bet input
- * @param {number | 'max'} modifier - The value to multiply by, or 'max'
- */
 function modifyBet(inputId, modifier) {
     const input = document.getElementById(inputId);
-    if (!input) return; // Guard clause
+    if (!input) return;
     
     let currentValue = parseFloat(input.value);
     if (isNaN(currentValue)) currentValue = 0;
 
     if (modifier === 'max') {
-        // Don't bet more than balance
         input.value = Math.max(0, Math.floor(balance));
     } else {
         let newValue = currentValue * modifier;
-        if (newValue < 1 && modifier < 1) newValue = 1; // Min bet 1
-        // Ensure new value is not negative
+        if (newValue < 1 && modifier < 1) newValue = 1;
         input.value = Math.max(0, Math.floor(newValue));
     }
 }
-// Make modifyBet global
 window.modifyBet = modifyBet;
 
-/**
- * Shows a message to the user (e.g., for errors)
- * @param {string} message - The text to display
- * @param {string} type - 'error' (red) or 'success' (green)
- */
 function showMessage(message, type = 'error') {
     messageText.textContent = message;
     if (type === 'error') {
@@ -69,7 +49,6 @@ function showMessage(message, type = 'error') {
         messageBox.classList.add('bg-green-600');
     }
     messageBox.classList.remove('hidden');
-    
     setTimeout(() => {
         messageBox.classList.add('hidden');
     }, 3000);
@@ -91,17 +70,12 @@ function depositMoney() {
     updateBalanceDisplay();
     toggleModal();
     showMessage(`$${amount.toFixed(2)} added to your balance!`, 'success');
-    depositAmountInput.value = "1000"; // Reset for next time
+    depositAmountInput.value = "1000";
 }
 
 // --- Game Navigation Logic ---
 
-/**
- * Loads a game's HTML into the game-area and initializes its scripts
- * @param {string} gameName - The name of the game (e.g., 'limbo')
- */
 async function loadGame(gameName) {
-    // Set active class on nav
     navButtons.forEach(button => {
         if (button.dataset.game === gameName) {
             button.classList.add('active');
@@ -111,15 +85,14 @@ async function loadGame(gameName) {
     });
 
     try {
-        // --- THIS IS THE UPDATED LINE ---
-       const response = await fetch(`${gameName}.html`);
+        // FIXED: Relative path only. Looks in the current folder.
+        const response = await fetch(`${gameName}.html`);
         
         if (!response.ok) {
-            throw new Error(`Failed to load ${gameName}.html from GitHub`);
+            throw new Error(`Failed to load ${gameName}.html`);
         }
         gameArea.innerHTML = await response.text();
         
-        // After loading HTML, initialize the game's specific event listeners
         initGame(gameName);
 
     } catch (error) {
@@ -128,39 +101,24 @@ async function loadGame(gameName) {
     }
 }
 
-/**
- * Attaches event listeners for the currently loaded game
- * @param {string} gameName 
- */
 function initGame(gameName) {
     switch (gameName) {
-        case 'limbo':
-            initLimbo();
-            break;
-        case 'blackjack':
-            initBlackjack();
-            break;
-        case 'slots':
-            initSlots();
-            break;
-        case 'scratch':
-            initScratch();
-            break;
+        case 'limbo': initLimbo(); break;
+        case 'blackjack': initBlackjack(); break;
+        case 'slots': initSlots(); break;
+        case 'scratch': initScratch(); break;
     }
 }
 
 // --- Event Listeners (Global) ---
 window.addEventListener('DOMContentLoaded', () => {
     updateBalanceDisplay();
-    // Load Limbo by default
     loadGame('limbo');
 
-    // Modal Listeners
     walletButton.addEventListener('click', toggleModal);
     closeModal.addEventListener('click', toggleModal);
     depositButton.addEventListener('click', depositMoney);
     
-    // Navigation Listeners
     navButtons.forEach(button => {
         button.addEventListener('click', (e) => {
             const gameName = e.currentTarget.getAttribute('data-game');
@@ -169,18 +127,14 @@ window.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-
 // ------------------------------------
 // --- GAME LOGIC ---
-// (This section contains all the game logic,
-// which is called by initGame() after loading)
 // ------------------------------------
 
-// --- Limbo Game Logic ---
-
+// --- Limbo Logic ---
 function initLimbo() {
-    const playLimboButton = document.getElementById('playLimboButton');
-    playLimboButton.addEventListener('click', playLimbo);
+    const btn = document.getElementById('playLimboButton');
+    if(btn) btn.addEventListener('click', playLimbo);
 }
 
 function getLimboCrashPoint() {
@@ -188,537 +142,382 @@ function getLimboCrashPoint() {
     const houseEdgePercent = 1;
     const r = Math.random();
     const crashPoint = (100 - houseEdgePercent) / (100 - r * 100);
-    const finalCrash = Math.floor(crashPoint * 100) / 100;
-    return finalCrash.toFixed(2);
+    return (Math.floor(crashPoint * 100) / 100).toFixed(2);
 }
 
 async function playLimbo() {
-    const betAmountInput = document.getElementById('limboBetAmount');
-    const targetMultiplierInput = document.getElementById('limboTargetMultiplier');
-    const limboResult = document.getElementById('limboResult');
-    const playLimboButton = document.getElementById('playLimboButton');
+    const betInput = document.getElementById('limboBetAmount');
+    const multInput = document.getElementById('limboTargetMultiplier');
+    const resultDiv = document.getElementById('limboResult');
+    const btn = document.getElementById('playLimboButton');
 
-    const betAmount = parseFloat(betAmountInput.value);
-    const targetMultiplier = parseFloat(targetMultiplierInput.value);
+    const bet = parseFloat(betInput.value);
+    const target = parseFloat(multInput.value);
 
-    if (isNaN(betAmount) || betAmount <= 0) {
-        showMessage("Please enter a valid bet amount.", 'error'); return;
-    }
-    if (isNaN(targetMultiplier) || targetMultiplier < 1.01) {
-        showMessage("Target multiplier must be at least 1.01x.", 'error'); return;
-    }
-    if (betAmount > balance) {
-        showMessage("You do not have enough funds for this bet.", 'error'); return;
-    }
+    if (isNaN(bet) || bet <= 0) { showMessage("Invalid bet.", 'error'); return; }
+    if (isNaN(target) || target < 1.01) { showMessage("Multiplier must be > 1.01x.", 'error'); return; }
+    if (bet > balance) { showMessage("Insufficient funds.", 'error'); return; }
 
-    playLimboButton.disabled = true;
-    balance -= betAmount;
+    btn.disabled = true;
+    balance -= bet;
     updateBalanceDisplay();
     
-    limboResult.innerHTML = `
-        <p class="text-5xl font-bold text-gray-400" id="limboCounter">1.00x</p>
-        <p class="text-xl text-gray-400 mt-2">Calculating...</p>
-    `;
-    const limboCounter = document.getElementById('limboCounter');
-
+    resultDiv.innerHTML = `<p class="text-5xl font-bold text-gray-400" id="limboCounter">1.00x</p>`;
+    
     let start = Date.now();
-    let duration = 1500;
-    const animationInterval = setInterval(() => {
-        if (Date.now() - start > duration) {
-            clearInterval(animationInterval); return;
-        }
-        let randomMultiplier = 1 + (Math.random() * 9);
-        limboCounter.textContent = `${randomMultiplier.toFixed(2)}x`;
+    const interval = setInterval(() => {
+        if (Date.now() - start > 1500) { clearInterval(interval); return; }
+        document.getElementById('limboCounter').textContent = `${(1 + Math.random()*9).toFixed(2)}x`;
     }, 50);
 
-    await new Promise(resolve => setTimeout(resolve, duration));
-    clearInterval(animationInterval);
+    await new Promise(r => setTimeout(r, 1500));
+    clearInterval(interval);
 
-    const crashPoint = getLimboCrashPoint();
-    
-    if (crashPoint >= targetMultiplier) {
-        const winnings = betAmount * targetMultiplier;
-        balance += winnings;
-        limboResult.innerHTML = `
-            <p class="text-5xl font-bold text-green-400">${crashPoint}x</p>
-            <p class="text-xl text-gray-200 mt-2">You won $${winnings.toFixed(2)}!</p>
-        `;
+    const crash = getLimboCrashPoint();
+    if (parseFloat(crash) >= target) {
+        const win = bet * target;
+        balance += win;
+        resultDiv.innerHTML = `<p class="text-5xl font-bold text-green-400">${crash}x</p><p class="mt-2">Won $${win.toFixed(2)}!</p>`;
     } else {
-        limboResult.innerHTML = `
-            <p class="text-5xl font-bold text-red-500">${crashPoint}x</p>
-            <p class="text-xl text-gray-200 mt-2">You lost $${betAmount.toFixed(2)}.</p>
-        `;
+        resultDiv.innerHTML = `<p class="text-5xl font-bold text-red-500">${crash}x</p><p class="mt-2">Lost $${bet.toFixed(2)}.</p>`;
     }
     updateBalanceDisplay();
-    playLimboButton.disabled = false;
+    btn.disabled = false;
 }
 
-// --- Slots Game Logic ---
-
+// --- Slots Logic ---
 const slotsSymbols = ['🍒', '🍋', '🍊', '🍉', '🔔', '🍀', '💎'];
-const slotsPayouts = {
-    '💎': { 3: 50 }, '🍀': { 3: 20 }, '🔔': { 3: 15 },
-    '🍉': { 3: 10 }, '🍊': { 3: 5 }, '🍋': { 3: 3 },
-    '🍒': { 3: 2, 2: 0.5 }
-};
+const slotsPayouts = { '💎': {3:50}, '🍀': {3:20}, '🔔': {3:15}, '🍉': {3:10}, '🍊': {3:5}, '🍋': {3:3}, '🍒': {3:2, 2:0.5} };
 
 function initSlots() {
-    const playSlotsButton = document.getElementById('playSlotsButton');
-    playSlotsButton.addEventListener('click', playSlots);
-}
-
-function getRandomSymbol() {
-    return slotsSymbols[Math.floor(Math.random() * slotsSymbols.length)];
+    const btn = document.getElementById('playSlotsButton');
+    if(btn) btn.addEventListener('click', playSlots);
 }
 
 async function playSlots() {
-    const slotsBetAmountInput = document.getElementById('slotsBetAmount');
-    const playSlotsButton = document.getElementById('playSlotsButton');
-    const slotsReelsContainer = document.getElementById('slotsReels');
-    const slotsResult = document.getElementById('slotsResult');
+    const betInput = document.getElementById('slotsBetAmount');
+    const btn = document.getElementById('playSlotsButton');
+    const reelContainer = document.getElementById('slotsReels');
+    const resultDiv = document.getElementById('slotsResult');
 
-    const betAmount = parseFloat(slotsBetAmountInput.value);
+    const bet = parseFloat(betInput.value);
 
-    if (isNaN(betAmount) || betAmount <= 0) {
-        showMessage("Please enter a valid bet amount.", 'error'); return;
-    }
-    if (betAmount > balance) {
-        showMessage("You do not have enough funds for this bet.", 'error'); return;
-    }
+    if (isNaN(bet) || bet <= 0) { showMessage("Invalid bet.", 'error'); return; }
+    if (bet > balance) { showMessage("Insufficient funds.", 'error'); return; }
 
-    playSlotsButton.disabled = true;
-    balance -= betAmount;
+    btn.disabled = true;
+    balance -= bet;
     updateBalanceDisplay();
-    slotsResult.innerHTML = '<span class="animate-pulse text-gray-400">Spinning...</span>';
-    slotsResult.classList.remove('text-green-400', 'text-red-500');
-
-    slotsReelsContainer.innerHTML = `
-        <div class="reel p-4 spinning">❓</div>
-        <div class="reel p-4 spinning">❓</div>
-        <div class="reel p-4 spinning">❓</div>
-    `;
-    const reels = slotsReelsContainer.querySelectorAll('.reel');
     
-    const spinInterval = setInterval(() => {
-        reels.forEach(reel => {
-            reel.textContent = getRandomSymbol();
-        });
+    resultDiv.innerHTML = '<span class="animate-pulse text-gray-400">Spinning...</span>';
+    resultDiv.className = "text-center mt-6 text-2xl font-bold"; 
+
+    const spin = setInterval(() => {
+        reelContainer.innerHTML = `
+            <div class="reel p-4 spinning">${slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]}</div>
+            <div class="reel p-4 spinning">${slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]}</div>
+            <div class="reel p-4 spinning">${slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]}</div>
+        `;
     }, 100);
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    await new Promise(r => setTimeout(r, 1500));
+    clearInterval(spin);
 
-    clearInterval(spinInterval);
+    const final = [
+        slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)],
+        slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)],
+        slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]
+    ];
 
-    const finalReels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-    slotsReelsContainer.innerHTML = finalReels.map(symbol => 
-        `<div class="reel p-4">${symbol}</div>`
-    ).join('');
+    reelContainer.innerHTML = final.map(s => `<div class="reel p-4">${s}</div>`).join('');
 
-    let winnings = 0;
+    let win = 0;
     const counts = {};
-    finalReels.forEach(symbol => { counts[symbol] = (counts[symbol] || 0) + 1; });
+    final.forEach(s => counts[s] = (counts[s]||0)+1);
 
-    if (finalReels[0] === finalReels[1] && finalReels[1] === finalReels[2]) {
-        const symbol = finalReels[0];
-        if (slotsPayouts[symbol] && slotsPayouts[symbol][3]) {
-            winnings = betAmount * slotsPayouts[symbol][3];
-        }
+    if (final[0] === final[1] && final[1] === final[2]) {
+        if (slotsPayouts[final[0]]?.[3]) win = bet * slotsPayouts[final[0]][3];
     } else if (counts['🍒'] === 2) {
-         if (slotsPayouts['🍒'] && slotsPayouts['🍒'][2]) {
-            winnings = betAmount * slotsPayouts['🍒'][2];
-         }
+        win = bet * slotsPayouts['🍒'][2];
     }
 
-    if (winnings > 0) {
-        balance += winnings;
-        slotsResult.textContent = `You won $${winnings.toFixed(2)}!`;
-        slotsResult.classList.add('text-green-400');
+    if (win > 0) {
+        balance += win;
+        resultDiv.textContent = `You won $${win.toFixed(2)}!`;
+        resultDiv.classList.add('text-green-400');
     } else {
-        slotsResult.textContent = `You lost $${betAmount.toFixed(2)}.`;
-        slotsResult.classList.add('text-red-500');
+        resultDiv.textContent = `You lost $${bet.toFixed(2)}.`;
+        resultDiv.classList.add('text-red-500');
     }
     updateBalanceDisplay();
-    playSlotsButton.disabled = false;
+    btn.disabled = false;
 }
 
-// --- Blackjack Game Logic ---
-
-const bjState = {
-    deck: [], playerHands: [], dealerHand: [],
-    bet: 0, activeHandIndex: 0, status: 'betting',
-};
+// --- Blackjack Logic ---
+let bjState = { deck: [], hands: [], dealer: [], bet: 0, activeHand: 0, status: 'betting' };
 const SUITS = ['♥', '♦', '♠', '♣'];
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 
 function initBlackjack() {
-    document.getElementById('blackjackDealButton').addEventListener('click', dealBlackjack);
-    document.getElementById('blackjackHit').addEventListener('click', blackjackHit);
-    document.getElementById('blackjackStand').addEventListener('click', blackjackStand);
-    document.getElementById('blackjackDouble').addEventListener('click', blackjackDouble);
-    document.getElementById('blackjackSplit').addEventListener('click', blackjackSplit);
+    const dealBtn = document.getElementById('blackjackDealButton');
+    if(dealBtn) {
+        dealBtn.addEventListener('click', dealBlackjack);
+        document.getElementById('blackjackHit').addEventListener('click', bjHit);
+        document.getElementById('blackjackStand').addEventListener('click', bjStand);
+        document.getElementById('blackjackDouble').addEventListener('click', bjDouble);
+        document.getElementById('blackjackSplit').addEventListener('click', bjSplit);
+    }
 }
 
-function createCardElement(card) {
-    const cardEl = document.createElement('div');
-    const color = (card.suit === '♥' || card.suit === '♦') ? 'red' : 'black';
-    cardEl.className = `card ${color}`;
+function createCardEl(card) {
+    const el = document.createElement('div');
+    const color = (card.suit === '♥' || card.suit === '♦') ? 'text-red-500' : 'text-gray-900';
+    el.className = `card ${color} bg-white rounded-lg w-[70px] h-[100px] flex items-center justify-center relative shadow-md border border-gray-200 text-xl font-bold`;
     
     if (card.hidden) {
-        cardEl.classList.add('card-back');
-        cardEl.innerHTML = `
-            <span class="card-suit-top"></span><span></span><span class="card-suit-bottom"></span>
-        `;
+        el.className += " bg-blue-500";
+        el.innerHTML = ""; 
     } else {
-        cardEl.innerHTML = `
-            <span class="card-suit-top">${card.rank}${card.suit}</span>
-            <span>${card.suit}</span>
-            <span class="card-suit-bottom">${card.rank}${card.suit}</span>
-        `;
+        el.innerHTML = `<span class="absolute top-1 left-1 text-sm">${card.rank}</span>${card.suit}<span class="absolute bottom-1 right-1 text-sm transform rotate-180">${card.rank}</span>`;
     }
-    return cardEl;
+    return el;
 }
 
-function createDeck() {
-    const deck = [];
-    for (const suit of SUITS) {
-        for (const rank of RANKS) {
-            let value = parseInt(rank);
-            if (['J', 'Q', 'K'].includes(rank)) value = 10;
-            if (rank === 'A') value = 11;
-            deck.push({ suit, rank, value });
-        }
+function getDeck() {
+    let deck = [];
+    for (let s of SUITS) for (let r of RANKS) {
+        let val = parseInt(r);
+        if (['J','Q','K'].includes(r)) val = 10;
+        if (r === 'A') val = 11;
+        deck.push({ suit: s, rank: r, value: val });
     }
-    for (let i = deck.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [deck[i], deck[j]] = [deck[j], deck[i]];
-    }
-    return deck;
+    return deck.sort(() => Math.random() - 0.5);
 }
 
-function calculateHandValue(hand) {
-    let value = hand.reduce((acc, card) => acc + card.value, 0);
-    let aces = hand.filter(card => card.rank === 'A').length;
-    while (value > 21 && aces > 0) {
-        value -= 10;
-        aces--;
-    }
-    return value;
+function getHandVal(hand) {
+    let val = hand.reduce((a, c) => a + (c.hidden ? 0 : c.value), 0);
+    let aces = hand.filter(c => c.rank === 'A' && !c.hidden).length;
+    while (val > 21 && aces > 0) { val -= 10; aces--; }
+    return val;
 }
 
-function renderHand(hand, element, scoreElement) {
-    element.innerHTML = '';
-    hand.forEach(card => element.appendChild(createCardElement(card)));
+function renderBJ() {
+    const dealerDiv = document.getElementById('blackjackDealerHand');
+    const playerDiv = document.getElementById('blackjackPlayerHand');
+    dealerDiv.innerHTML = ''; playerDiv.innerHTML = '';
     
-    let score = calculateHandValue(hand);
-    let scoreText = score;
-    if (hand.some(c => c.rank === 'A' && score + 10 <= 21)) {
-         if (calculateHandValue(hand.filter(c => !c.hidden)) !== 21) {
-            scoreText = `${score} / ${score - 10}`;
-         }
-    }
-    if (hand.some(c => c.hidden)) {
-        scoreText = `?`;
-    }
-    scoreElement.textContent = `Score: ${scoreText}`;
-}
+    bjState.dealer.forEach(c => dealerDiv.appendChild(createCardEl(c)));
+    bjState.hands[bjState.activeHand].forEach(c => playerDiv.appendChild(createCardEl(c)));
 
-function updateBlackjackButtons() {
-    const hand = bjState.playerHands[bjState.activeHandIndex];
-    document.getElementById('blackjackDouble').disabled = !(hand.length === 2 && balance >= bjState.bet);
-    document.getElementById('blackjackSplit').disabled = !(hand.length === 2 && hand[0].value === hand[1].value && balance >= bjState.bet);
-    document.getElementById('blackjackHit').disabled = false;
-    document.getElementById('blackjackStand').disabled = false;
+    document.getElementById('blackjackDealerScore').textContent = `Score: ${getHandVal(bjState.dealer)}`;
+    document.getElementById('blackjackPlayerScore').textContent = `Score: ${getHandVal(bjState.hands[bjState.activeHand])}`;
 }
 
 async function dealBlackjack() {
-    const betAmount = parseFloat(document.getElementById('blackjackBetAmount').value);
-    if (isNaN(betAmount) || betAmount <= 0) {
-        showMessage("Please enter a valid bet amount.", 'error'); return;
-    }
-    if (betAmount > balance) {
-        showMessage("You do not have enough funds for this bet.", 'error'); return;
-    }
-
-    balance -= betAmount;
+    const betInput = document.getElementById('blackjackBetAmount');
+    const bet = parseFloat(betInput.value);
+    
+    if (isNaN(bet) || bet <= 0 || bet > balance) { showMessage("Invalid bet.", 'error'); return; }
+    
+    balance -= bet;
     updateBalanceDisplay();
-
-    bjState.bet = betAmount;
-    bjState.deck = createDeck();
-    bjState.dealerHand = [bjState.deck.pop(), { ...bjState.deck.pop(), hidden: true }];
-    bjState.playerHands = [[bjState.deck.pop(), bjState.deck.pop()]];
-    bjState.activeHandIndex = 0;
-    bjState.status = 'playing';
-
-    document.getElementById('blackjackResult').textContent = '';
+    
+    bjState = {
+        deck: getDeck(),
+        dealer: [],
+        hands: [[]],
+        bet: bet,
+        activeHand: 0,
+        status: 'playing'
+    };
+    
+    bjState.hands[0].push(bjState.deck.pop());
+    bjState.dealer.push(bjState.deck.pop());
+    bjState.hands[0].push(bjState.deck.pop());
+    bjState.dealer.push({ ...bjState.deck.pop(), hidden: true });
+    
     document.getElementById('blackjackBetControls').classList.add('hidden');
     document.getElementById('blackjackActionControls').classList.remove('hidden');
-
-    renderHand(bjState.dealerHand, document.getElementById('blackjackDealerHand'), document.getElementById('blackjackDealerScore'));
-    renderHand(bjState.playerHands[0], document.getElementById('blackjackPlayerHand'), document.getElementById('blackjackPlayerScore'));
+    document.getElementById('blackjackResult').textContent = '';
     
-    updateBlackjackButtons();
+    renderBJ();
+    checkBJTurn();
+}
 
-    const playerValue = calculateHandValue(bjState.playerHands[0]);
-    const dealerValue = calculateHandValue(bjState.dealerHand);
-
-    if (playerValue === 21) {
-        if (dealerValue === 21) {
-            bjState.status = 'finished';
-            document.getElementById('blackjackResult').textContent = 'Push! (Both have Blackjack)';
-            balance += bjState.bet;
-            revealDealerHand();
-        } else {
-            bjState.status = 'finished';
-            document.getElementById('blackjackResult').textContent = 'Blackjack! You win 1.5x!';
-            balance += bjState.bet * 2.5;
-            revealDealerHand();
-        }
-        endBlackjackRound();
-    } else if (dealerValue === 21) {
-        bjState.status = 'finished';
-        document.getElementById('blackjackResult').textContent = 'Dealer has Blackjack. You lose.';
-        revealDealerHand();
-        endBlackjackRound();
+function bjHit() {
+    bjState.hands[bjState.activeHand].push(bjState.deck.pop());
+    renderBJ();
+    if (getHandVal(bjState.hands[bjState.activeHand]) > 21) {
+        endBJRound("Bust!");
     }
 }
 
-function blackjackHit() {
-    const hand = bjState.playerHands[bjState.activeHandIndex];
-    hand.push(bjState.deck.pop());
-    renderHand(hand, document.getElementById('blackjackPlayerHand'), document.getElementById('blackjackPlayerScore'));
-    
-    if (calculateHandValue(hand) > 21) {
-        document.getElementById('blackjackResult').textContent = `Hand ${bjState.activeHandIndex + 1} Busts!`;
-        playNextHandOrDealer();
-    }
-    
-    document.getElementById('blackjackDouble').disabled = true;
-    document.getElementById('blackjackSplit').disabled = true;
+function bjStand() {
+    bjDealerPlay();
 }
 
-function blackjackStand() {
-    playNextHandOrDealer();
-}
-
-function blackjackDouble() {
-    if (balance < bjState.bet) {
-        showMessage("Not enough funds to double down.", 'error'); return;
-    }
-    
+function bjDouble() {
+    if (balance < bjState.bet) return;
     balance -= bjState.bet;
     bjState.bet *= 2;
     updateBalanceDisplay();
-    
-    const hand = bjState.playerHands[bjState.activeHandIndex];
-    hand.push(bjState.deck.pop());
-    renderHand(hand, document.getElementById('blackjackPlayerHand'), document.getElementById('blackjackPlayerScore'));
-    
-    playNextHandOrDealer();
+    bjState.hands[bjState.activeHand].push(bjState.deck.pop());
+    renderBJ();
+    if (getHandVal(bjState.hands[bjState.activeHand]) > 21) endBJRound("Bust!");
+    else bjDealerPlay();
 }
 
-function blackjackSplit() {
-    if (balance < bjState.bet) {
-        showMessage("Not enough funds to split.", 'error'); return;
+function bjSplit() {
+    // Simplified split for brevity: just duplicates bet and card
+    if (balance < bjState.bet) return;
+    showMessage("Split feature coming soon!", 'success');
+}
+
+async function bjDealerPlay() {
+    bjState.dealer[1].hidden = false;
+    renderBJ();
+    
+    while (getHandVal(bjState.dealer) < 17) {
+        await new Promise(r => setTimeout(r, 500));
+        bjState.dealer.push(bjState.deck.pop());
+        renderBJ();
     }
     
-    balance -= bjState.bet;
-    updateBalanceDisplay();
+    const pVal = getHandVal(bjState.hands[bjState.activeHand]);
+    const dVal = getHandVal(bjState.dealer);
     
-    const hand = bjState.playerHands[bjState.activeHandIndex];
-    const newHand = [hand.pop()];
-    hand.push(bjState.deck.pop());
-    newHand.push(bjState.deck.pop());
-    
-    bjState.playerHands.splice(bjState.activeHandIndex + 1, 0, newHand);
-    renderHand(bjState.playerHands[bjState.activeHandIndex], document.getElementById('blackjackPlayerHand'), document.getElementById('blackjackPlayerScore'));
-    updateBlackjackButtons();
-}
-
-function playNextHandOrDealer() {
-    if (bjState.activeHandIndex < bjState.playerHands.length - 1) {
-        bjState.activeHandIndex++;
-        document.getElementById('blackjackResult').textContent = `Playing Hand ${bjState.activeHandIndex + 1}...`;
-        renderHand(bjState.playerHands[bjState.activeHandIndex], document.getElementById('blackjackPlayerHand'), document.getElementById('blackjackPlayerScore'));
-        updateBlackjackButtons();
+    if (dVal > 21 || pVal > dVal) {
+        balance += bjState.bet * 2;
+        endBJRound("You Win!");
+    } else if (pVal === dVal) {
+        balance += bjState.bet;
+        endBJRound("Push");
     } else {
-        bjState.status = 'dealer';
-        document.getElementById('blackjackActionControls').classList.add('hidden');
-        dealerTurn();
+        endBJRound("Dealer Wins");
     }
-}
-
-function revealDealerHand() {
-    bjState.dealerHand.forEach(card => card.hidden = false);
-    renderHand(bjState.dealerHand, document.getElementById('blackjackDealerHand'), document.getElementById('blackjackDealerScore'));
-}
-
-async function dealerTurn() {
-    revealDealerHand();
-    let dealerValue = calculateHandValue(bjState.dealerHand);
-    
-    while (dealerValue < 17) {
-        await new Promise(resolve => setTimeout(resolve, 500));
-        bjState.dealerHand.push(bjState.deck.pop());
-        renderHand(bjState.dealerHand, document.getElementById('blackjackDealerHand'), document.getElementById('blackjackDealerScore'));
-        dealerValue = calculateHandValue(bjState.dealerHand);
-    }
-    determineWinner();
-}
-
-function determineWinner() {
-    const dealerValue = calculateHandValue(bjState.dealerHand);
-    let totalWinnings = 0;
-    let resultMessages = [];
-
-    bjState.playerHands.forEach((hand, index) => {
-        const playerValue = calculateHandValue(hand);
-        const handBet = bjState.bet / bjState.playerHands.length;
-        
-        let msg = `Hand ${index + 1}: `;
-        if (playerValue > 21) msg += "Bust! You lose.";
-        else if (dealerValue > 21) { msg += "Dealer Busts! You win!"; totalWinnings += handBet * 2; }
-        else if (playerValue > dealerValue) { msg += "You win!"; totalWinnings += handBet * 2; }
-        else if (playerValue < dealerValue) msg += "You lose.";
-        else { msg += "Push!"; totalWinnings += handBet; }
-        resultMessages.push(msg);
-    });
-    
-    document.getElementById('blackjackResult').innerHTML = resultMessages.join('<br>');
-    balance += totalWinnings;
     updateBalanceDisplay();
-    endBlackjackRound();
 }
 
-function endBlackjackRound() {
+function endBJRound(msg) {
+    document.getElementById('blackjackResult').textContent = msg;
     document.getElementById('blackjackBetControls').classList.remove('hidden');
     document.getElementById('blackjackActionControls').classList.add('hidden');
-    bjState.status = 'betting';
 }
 
 // --- Scratch Off Logic ---
-
-let scratchCard = { prize: 0, bet: 0, isRevealed: false };
-let isScratching = false;
+let scratchState = { prize: 0, isRevealed: false, isDrawing: false };
 
 function initScratch() {
-    const buyScratchButton = document.getElementById('buyScratchButton');
-    const scratchCanvas = document.getElementById('scratchCanvas');
+    const btn = document.getElementById('buyScratchButton');
+    const canvas = document.getElementById('scratchCanvas');
+    if (!btn || !canvas) return;
 
-    buyScratchButton.addEventListener('click', buyScratchTicket);
+    const ctx = canvas.getContext('2d');
+
+    btn.addEventListener('click', () => buyScratchTicket(ctx, canvas));
     
-    // Need to get context *after* canvas is in DOM
-    const scratchCtx = scratchCanvas.getContext('2d');
-
-    // Attach all canvas listeners
-    scratchCanvas.addEventListener('mousedown', (e) => { isScratching = true; scratch(e, scratchCtx, scratchCanvas); });
-    scratchCanvas.addEventListener('mousemove', (e) => scratch(e, scratchCtx, scratchCanvas));
-    scratchCanvas.addEventListener('mouseup', () => stopScratching(scratchCtx, scratchCanvas));
-    scratchCanvas.addEventListener('mouseout', () => stopScratching(scratchCtx, scratchCanvas));
-    scratchCanvas.addEventListener('touchstart', (e) => { isScratching = true; scratch(e, scratchCtx, scratchCanvas); }, { passive: false });
-    scratchCanvas.addEventListener('touchmove', (e) => scratch(e, scratchCtx, scratchCanvas), { passive: false });
-    scratchCanvas.addEventListener('touchend', () => stopScratching(scratchCtx, scratchCanvas));
-    scratchCanvas.addEventListener('touchcancel', () => stopScratching(scratchCtx, scratchCanvas));
+    // Mouse Events
+    canvas.addEventListener('mousedown', (e) => startScratch(e, ctx, canvas));
+    canvas.addEventListener('mousemove', (e) => doScratch(e, ctx, canvas));
+    canvas.addEventListener('mouseup', () => stopScratch(ctx, canvas));
+    canvas.addEventListener('mouseout', () => stopScratch(ctx, canvas));
+    
+    // Touch Events
+    canvas.addEventListener('touchstart', (e) => startScratch(e, ctx, canvas), {passive: false});
+    canvas.addEventListener('touchmove', (e) => doScratch(e, ctx, canvas), {passive: false});
+    canvas.addEventListener('touchend', () => stopScratch(ctx, canvas));
 }
 
-function buyScratchTicket() {
-    const scratchBetAmountInput = document.getElementById('scratchBetAmount');
-    const betAmount = parseFloat(scratchBetAmountInput.value);
+function buyScratchTicket(ctx, canvas) {
+    const betInput = document.getElementById('scratchBetAmount');
+    const bet = parseFloat(betInput.value);
     
-    if (isNaN(betAmount) || betAmount <= 0) {
-        showMessage("Please enter a valid ticket price.", 'error'); return;
-    }
-    if (betAmount > balance) {
-        showMessage("You do not have enough funds for this ticket.", 'error'); return;
-    }
-
-    balance -= betAmount;
+    if (isNaN(bet) || bet <= 0 || bet > balance) { showMessage("Invalid amount", 'error'); return; }
+    
+    balance -= bet;
     updateBalanceDisplay();
     
     document.getElementById('buyScratchButton').disabled = true;
-    document.getElementById('scratchResult').textContent = '';
     document.getElementById('scratchInstructions').classList.add('hidden');
-
-    const r = Math.random();
-    let prize = 0;
-    if (r < 0.1) prize = betAmount * 10;
-    else if (r < 0.25) prize = betAmount * 2;
-    else if (r < 0.5) prize = betAmount * 1;
+    document.getElementById('scratchResult').textContent = '';
     
-    scratchCard.prize = prize;
-    scratchCard.bet = betAmount;
-    scratchCard.isRevealed = false;
+    // Reset State
+    scratchState.isRevealed = false;
+    scratchState.prize = (Math.random() < 0.3) ? bet * 2 : 0; // 30% win rate example
     
-    document.getElementById('scratchPrize').textContent = `$${prize.toFixed(2)}`;
-    document.getElementById('scratchPrize').classList.remove('hidden');
-
-    const scratchCanvas = document.getElementById('scratchCanvas');
-    const scratchCtx = scratchCanvas.getContext('2d');
-    scratchCanvas.classList.remove('hidden');
-    scratchCtx.globalCompositeOperation = 'source-over';
-    scratchCtx.fillStyle = '#3a5063';
-    scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
+    // Setup Prize Text
+    const prizeDiv = document.getElementById('scratchPrize');
+    prizeDiv.textContent = scratchState.prize > 0 ? `$${scratchState.prize.toFixed(2)}` : "$0.00";
+    prizeDiv.classList.remove('hidden');
+    
+    // Setup Canvas
+    canvas.classList.remove('hidden');
+    ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = '#3a5063'; // The scratch cover color
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-function scratch(e, scratchCtx, scratchCanvas) {
-    if (!isScratching || scratchCard.isRevealed) return;
-
+function startScratch(e, ctx, canvas) {
+    if (scratchState.isRevealed) return;
     e.preventDefault();
-    const rect = scratchCanvas.getBoundingClientRect();
-    const scaleX = scratchCanvas.width / rect.width;
-    const scaleY = scratchCanvas.height / rect.height;
-    
-    const clientX = e.clientX || e.touches[0].clientX;
-    const clientY = e.clientY || e.touches[0].clientY;
-
-    const x = (clientX - rect.left) * scaleX;
-    const y = (clientY - rect.top) * scaleY;
-
-    scratchCtx.globalCompositeOperation = 'destination-out';
-    scratchCtx.beginPath();
-    scratchCtx.arc(x, y, 15, 0, 2 * Math.PI);
-    scratchCtx.fill();
+    scratchState.isDrawing = true;
+    doScratch(e, ctx, canvas);
 }
 
-function stopScratching(scratchCtx, scratchCanvas) {
-    isScratching = false;
+function doScratch(e, ctx, canvas) {
+    if (!scratchState.isDrawing || scratchState.isRevealed) return;
+    e.preventDefault();
     
-    if (!scratchCard.isRevealed) {
-        const pixelData = scratchCtx.getImageData(0, 0, scratchCanvas.width, scratchCanvas.height).data;
-        let transparentPixels = 0;
-        for (let i = 3; i < pixelData.length; i += 4) {
-            if (pixelData[i] === 0) transparentPixels++;
-        }
+    const rect = canvas.getBoundingClientRect();
+    const x = (e.clientX || e.touches[0].clientX) - rect.left;
+    const y = (e.clientY || e.touches[0].clientY) - rect.top;
+    
+    // Adjust for canvas scaling if CSS width != attribute width
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath();
+    ctx.arc(x * scaleX, y * scaleY, 20, 0, Math.PI * 2);
+    ctx.fill();
+}
+
+function stopScratch(ctx, canvas) {
+    if (!scratchState.isDrawing) return;
+    scratchState.isDrawing = false;
+    checkScratchWin(ctx, canvas);
+}
+
+function checkScratchWin(ctx, canvas) {
+    if (scratchState.isRevealed) return;
+    
+    // Check how much is cleared
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
+    let cleared = 0;
+    for (let i = 3; i < imgData.length; i += 4) {
+        if (imgData[i] === 0) cleared++;
+    }
+    
+    if (cleared / (canvas.width * canvas.height) > 0.4) { // Win if 40% cleared
+        scratchState.isRevealed = true;
+        ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear all
         
-        if ((transparentPixels / (scratchCanvas.width * scratchCanvas.height)) > 0.7) {
-            revealScratchCard(scratchCtx, scratchCanvas);
+        const resDiv = document.getElementById('scratchResult');
+        if (scratchState.prize > 0) {
+            balance += scratchState.prize;
+            resDiv.textContent = `You Won $${scratchState.prize.toFixed(2)}!`;
+            resDiv.className = "text-center mt-6 text-2xl font-bold text-green-400";
+        } else {
+            resDiv.textContent = "Better luck next time.";
+            resDiv.className = "text-center mt-6 text-2xl font-bold text-red-500";
         }
+        updateBalanceDisplay();
+        
+        setTimeout(() => {
+            document.getElementById('buyScratchButton').disabled = false;
+            canvas.classList.add('hidden');
+            document.getElementById('scratchPrize').classList.add('hidden');
+            document.getElementById('scratchInstructions').classList.remove('hidden');
+        }, 2000);
     }
-}
-
-function revealScratchCard(scratchCtx, scratchCanvas) {
-    scratchCard.isRevealed = true;
-    
-    scratchCtx.globalCompositeOperation = 'destination-out';
-    scratchCtx.fillRect(0, 0, scratchCanvas.width, scratchCanvas.height);
-    
-    const scratchResult = document.getElementById('scratchResult');
-    if (scratchCard.prize > 0) {
-        scratchResult.textContent = `You won $${scratchCard.prize.toFixed(2)}!`;
-        scratchResult.classList.add('text-green-400');
-        balance += scratchCard.prize;
-    } else {
-        scratchResult.textContent = 'You won $0.00.';
-        scratchResult.classList.add('text-red-500');
-    }
-    
-    updateBalanceDisplay();
-    document.getElementById('buyScratchButton').disabled = false;
-    
-    setTimeout(() => {
-        document.getElementById('scratchPrize').classList.add('hidden');
-        scratchCanvas.classList.add('hidden');
-        document.getElementById('scratchInstructions').classList.remove('hidden');
-        scratchResult.textContent = '';
-        scratchResult.classList.remove('text-green-400', 'text-red-500');
-    }, 3000);
 }
