@@ -10,6 +10,12 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
+    
+    <!-- ADDED: Firebase SDKs -->
+    <!-- We need these for the multiplayer poker game -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js"></script>
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -58,7 +64,13 @@
                 </li>
                 <li>
                     <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="scratch">
-                        Scratch Off(NOT WORKING)
+                        Scratch Off
+                    </button>
+                </li>
+                <!-- ADDED: Poker Button -->
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="poker">
+                        Poker (Multiplayer)
                     </button>
                 </li>
             </ul>
