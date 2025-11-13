@@ -4,8 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stakeish.com</title>
+    <!-- Using Tailwind CSS for styling -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Using Inter font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
+    
+    <!-- FIX: Loading your local style.css -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen flex flex-col">
@@ -14,11 +18,14 @@
     <header class="bg-[#1a2c38] shadow-md w-full sticky top-0 z-20">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
+                <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
                     <span class="text-3xl font-extrabold text-white">
                         Stakeish<span class="text-[#00aaff]">.com</span>
                     </span>
                 </div>
+                
+                <!-- Wallet -->
                 <div class="flex items-center">
                     <button id="walletButton" class="bg-[#2c4051] hover:bg-[#3a5063] text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200">
                         <span>Balance: $</span>
@@ -39,7 +46,7 @@
                 <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="blackjack">Blackjack</button></li>
                 <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="slots">Slots</button></li>
                 <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="scratch">Scratch Off</button></li>
-                <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="poker">Poker (MP)</button></li>
+                <!-- Removed Poker Button -->
             </ul>
         </nav>
 
@@ -70,7 +77,9 @@
         <span id="messageText"></span>
     </div>
 
-    <!-- This is the crucial change: type="module" -->
-    <script src="main.js" type="module"></script>
+    <!-- 
+      FIX: Removed type="module"
+    -->
+    <script src="main.js"></script>
 </body>
 </html>
