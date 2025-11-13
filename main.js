@@ -1,5 +1,5 @@
 // --- START: FIREBASE SDK IMPORTS ---
-// Import the functions you need from the SDKs you need
+// These imports are now possible because index.html uses type="module"
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { 
@@ -38,7 +38,9 @@ let navButtons, gameArea, messageBox, messageText;
 // --- Utility Functions (Global) ---
 function updateBalanceDisplay() {
     if (!balanceDisplay) balanceDisplay = document.getElementById('balanceDisplay');
-    balanceDisplay.textContent = balance.toFixed(2);
+    if (balanceDisplay) {
+        balanceDisplay.textContent = balance.toFixed(2);
+    }
     localStorage.setItem('stakeishBalance', balance);
 }
 
@@ -60,23 +62,27 @@ window.modifyBet = modifyBet; // Make global
 function showMessage(message, type = 'error') {
     if (!messageBox) messageBox = document.getElementById('messageBox');
     if (!messageText) messageText = document.getElementById('messageText');
-    messageText.textContent = message;
-    messageBox.classList.remove('bg-green-600', 'bg-red-600');
-    if (type === 'error') {
-        messageBox.classList.add('bg-red-600');
-    } else if (type === 'success') {
-        messageBox.classList.add('bg-green-600');
+    if (messageBox && messageText) {
+        messageText.textContent = message;
+        messageBox.classList.remove('bg-green-600', 'bg-red-600');
+        if (type === 'error') {
+            messageBox.classList.add('bg-red-600');
+        } else if (type === 'success') {
+            messageBox.classList.add('bg-green-600');
+        }
+        messageBox.classList.remove('hidden');
+        setTimeout(() => {
+            messageBox.classList.add('hidden');
+        }, 3000);
     }
-    messageBox.classList.remove('hidden');
-    setTimeout(() => {
-        messageBox.classList.add('hidden');
-    }, 3000);
 }
 
 // --- Modal Logic ---
 function toggleModal() {
     if (!depositModal) depositModal = document.getElementById('depositModal');
-    depositModal.classList.toggle('hidden');
+    if (depositModal) {
+        depositModal.classList.toggle('hidden');
+    }
 }
 
 function depositMoney() {
@@ -101,6 +107,7 @@ async function loadGame(gameName) {
     });
 
     try {
+        // This is the fix for the GitHub pages loading issue
         const response = await fetch(`${gameName}.html`);
         if (!response.ok) {
             throw new Error(`Failed to load ${gameName}.html`);
@@ -127,6 +134,7 @@ function initGame(gameName) {
 
 // --- Event Listeners (Global) ---
 window.addEventListener('DOMContentLoaded', () => {
+    // Initialize all DOM element variables
     balanceDisplay = document.getElementById('balanceDisplay');
     walletButton = document.getElementById('walletButton');
     depositModal = document.getElementById('depositModal');
@@ -139,11 +147,12 @@ window.addEventListener('DOMContentLoaded', () => {
     messageText = document.getElementById('messageText');
 
     updateBalanceDisplay();
-    loadGame('limbo');
+    loadGame('limbo'); // Load default game
 
-    walletButton.addEventListener('click', toggleModal);
-    closeModal.addEventListener('click', toggleModal);
-    depositButton.addEventListener('click', depositMoney);
+    // Attach listeners
+    if (walletButton) walletButton.addEventListener('click', toggleModal);
+    if (closeModal) closeModal.addEventListener('click', toggleModal);
+    if (depositButton) depositButton.addEventListener('click', depositMoney);
     
     navButtons.forEach(button => {
         button.addEventListener('click', (e) => {
@@ -223,12 +232,12 @@ async function playSlots() {
     resultDiv.innerHTML = '<span class="animate-pulse text-gray-400">Spinning...</span>';
     resultDiv.classList.remove('text-green-400', 'text-red-500');
     const spin = setInterval(() => {
-        reelsDiv.innerHTML = [1,2,3].map(() => `<div class="reel p-4 spinning">${getRandomSymbol()}</div>`).join('');
+        if (reelsDiv) reelsDiv.innerHTML = [1,2,3].map(() => `<div class="reel p-4 spinning">${getRandomSymbol()}</div>`).join('');
     }, 100);
     await new Promise(r => setTimeout(r, 1500));
     clearInterval(spin);
     const finalReels = [getRandomSymbol(), getRandomSymbol(), getRandomSymbol()];
-    reelsDiv.innerHTML = finalReels.map(s => `<div class="reel p-4">${s}</div>`).join('');
+    if (reelsDiv) reelsDiv.innerHTML = finalReels.map(s => `<div class="reel p-4">${s}</div>`).join('');
     let win = 0; const counts = {}; finalReels.forEach(s => counts[s] = (counts[s]||0)+1);
     if (finalReels[0]===finalReels[1] && finalReels[1]===finalReels[2]) {
         win = (slotsPayouts[finalReels[0]]?.[3] || 0) * bet;
@@ -278,15 +287,24 @@ function calcHandVal(h) {
     while(v>21&&aces>0){ v-=10; aces--; } return v;
 }
 function renderBJ() {
-    document.getElementById('blackjackDealerHand').innerHTML = '';
-    bjState.dealer.forEach(c => document.getElementById('blackjackDealerHand').appendChild(createCardEl(c)));
-    document.getElementById('blackjackPlayerHand').innerHTML = '';
-    bjState.hands[bjState.active].forEach(c => document.getElementById('blackjackPlayerHand').appendChild(createCardEl(c)));
+    const dealerHandEl = document.getElementById('blackjackDealerHand');
+    const playerHandEl = document.getElementById('blackjackPlayerHand');
+    if (dealerHandEl) {
+        dealerHandEl.innerHTML = '';
+        bjState.dealer.forEach(c => dealerHandEl.appendChild(createCardEl(c)));
+    }
+    if (playerHandEl) {
+        playerHandEl.innerHTML = '';
+        bjState.hands[bjState.active].forEach(c => playerHandEl.appendChild(createCardEl(c)));
+    }
     let dScore = calcHandVal(bjState.dealer);
     let pScore = calcHandVal(bjState.hands[bjState.active]);
-    document.getElementById('blackjackDealerScore').textContent = `Score: ${dScore}`;
-    document.getElementById('blackjackPlayerScore').textContent = `Score: ${pScore}`;
-    document.getElementById('blackjackDouble').disabled = !(bjState.hands[bjState.active].length === 2 && balance >= bjState.bet);
+    const dealerScoreEl = document.getElementById('blackjackDealerScore');
+    const playerScoreEl = document.getElementById('blackjackPlayerScore');
+    if (dealerScoreEl) dealerScoreEl.textContent = `Score: ${dScore}`;
+    if (playerScoreEl) playerScoreEl.textContent = `Score: ${pScore}`;
+    const doubleBtn = document.getElementById('blackjackDouble');
+    if (doubleBtn) doubleBtn.disabled = !(bjState.hands[bjState.active].length === 2 && balance >= bjState.bet);
 }
 function dealBlackjack() {
     const bet = parseFloat(document.getElementById('blackjackBetAmount').value);
@@ -428,8 +446,10 @@ function revealScratchCard(scratchCtx, scratchCanvas) {
         document.getElementById('scratchPrize').classList.add('hidden');
         scratchCanvas.classList.add('hidden');
         document.getElementById('scratchInstructions').classList.remove('hidden');
-        res.textContent = '';
-        res.classList.remove('text-green-400', 'text-red-500');
+        if (res) {
+            res.textContent = '';
+            res.classList.remove('text-green-400', 'text-red-500');
+        }
     }, 3000);
 }
 
@@ -447,6 +467,7 @@ let fbGameUnsubscribe = null; // To stop listening to game updates
 let fbGameId = null; // The ID of the game we are in
 let fbPlayerId = null; // Our own user ID
 let fbTurnTimer = null; // JS Timeout for the 30-second timer
+// Use the projectId from your config to build the database path
 const POKER_DB_PATH = `artifacts/${firebaseConfig.projectId}/public/data/poker`;
 
 
@@ -605,10 +626,14 @@ function createNewPlayer(id, chips) {
 }
 
 function showPokerTable(show) {
-    document.getElementById('pokerLobby').classList.toggle('hidden', show);
-    document.getElementById('pokerTable').classList.toggle('hidden', !show);
-    if (show) {
-        document.getElementById('pokerGameCode').textContent = fbGameId;
+    const lobby = document.getElementById('pokerLobby');
+    const table = document.getElementById('pokerTable');
+    const codeEl = document.getElementById('pokerGameCode');
+
+    if (lobby) lobby.classList.toggle('hidden', show);
+    if (table) table.classList.toggle('hidden', !show);
+    if (show && codeEl) {
+        codeEl.textContent = fbGameId;
     }
 }
 
@@ -681,12 +706,16 @@ function renderPokerGame(gameData) {
     const { players, seats, pot, communityCards, currentTurn } = gameData;
     
     const mySeatIndex = seats[fbPlayerId];
-    if (mySeatIndex === undefined) return;
+    if (mySeatIndex === undefined) return; // Not fully joined yet
     
-    document.getElementById('pokerPot').textContent = `Pot: $${pot}`;
+    const potEl = document.getElementById('pokerPot');
+    if (potEl) potEl.textContent = `Pot: $${pot}`;
+    
     const commCardDiv = document.getElementById('pokerCommunityCards');
-    commCardDiv.innerHTML = '';
-    communityCards.forEach(cardStr => commCardDiv.appendChild(renderPokerCard(cardStr)));
+    if (commCardDiv) {
+        commCardDiv.innerHTML = '';
+        communityCards.forEach(cardStr => commCardDiv.appendChild(renderPokerCard(cardStr)));
+    }
     
     for (let i = 0; i < 6; i++) {
         const seatEl = document.getElementById(`seat-${i}`);
@@ -702,15 +731,17 @@ function renderPokerGame(gameData) {
         let relativeSeat = (seatIndex - mySeatIndex + 6) % 6;
         const seatEl = document.getElementById(`seat-${relativeSeat}`);
         
-        seatEl.innerHTML = `
-            <div class="seat-name">${playerId.substring(0, 6)}...</div>
-            <div class="seat-chips">$${player.chips}</div>
-            <div class="seat-cards">${renderPlayerCards(player)}</div>
-            <div class="seat-bet">${player.currentBet > 0 ? `$${player.currentBet}` : ''}</div>
-        `;
-        
-        if (player.status === 'folded') seatEl.classList.add('folded');
-        if (playerId === currentTurn) seatEl.classList.add('active-turn');
+        if (seatEl) {
+            seatEl.innerHTML = `
+                <div class="seat-name">${playerId.substring(0, 6)}...</div>
+                <div class="seat-chips">$${player.chips}</div>
+                <div class="seat-cards">${renderPlayerCards(player)}</div>
+                <div class="seat-bet">${player.currentBet > 0 ? `$${player.currentBet}` : ''}</div>
+            `;
+            
+            if (player.status === 'folded') seatEl.classList.add('folded');
+            if (playerId === currentTurn) seatEl.classList.add('active-turn');
+        }
     }
     
     renderActionControls(gameData);
@@ -743,9 +774,9 @@ function renderActionControls(gameData) {
     const controls = document.getElementById('pokerActionControls');
     const timer = document.getElementById('pokerTimer');
 
-    if (currentTurn !== fbPlayerId) {
-        controls.classList.add('hidden');
-        timer.classList.add('hidden');
+    if (currentTurn !== fbPlayerId || !controls || !timer) {
+        if (controls) controls.classList.add('hidden');
+        if (timer) timer.classList.add('hidden');
         if (fbTurnTimer) clearTimeout(fbTurnTimer);
         return;
     }
@@ -756,38 +787,44 @@ function renderActionControls(gameData) {
     const player = players[fbPlayerId];
     const callAmount = currentBet - player.currentBet;
     
-    document.getElementById('pokerCall').textContent = callAmount > 0 ? `Call $${callAmount}` : 'Check';
-    document.getElementById('pokerCheck').style.display = callAmount > 0 ? 'none' : 'inline-block';
-    document.getElementById('pokerCall').style.display = callAmount > 0 ? 'inline-block' : 'none';
+    const callBtn = document.getElementById('pokerCall');
+    const checkBtn = document.getElementById('pokerCheck');
+    if (callBtn) callBtn.textContent = callAmount > 0 ? `Call $${callAmount}` : 'Check';
+    if (checkBtn) checkBtn.style.display = callAmount > 0 ? 'none' : 'inline-block';
+    if (callBtn) callBtn.style.display = callAmount > 0 ? 'inline-block' : 'none';
 
     const raiseSlider = document.getElementById('pokerRaiseSlider');
     const raiseButton = document.getElementById('pokerRaise');
     const minRaise = currentBet + (currentBet - (gameData.lastRaise || gameData.bigBlind));
     const maxRaise = player.chips;
     
-    raiseSlider.min = Math.min(minRaise, maxRaise);
-    raiseSlider.max = maxRaise;
-    raiseSlider.value = raiseSlider.min;
-    raiseButton.textContent = `Raise to $${raiseSlider.min}`;
-    
-    raiseSlider.oninput = () => {
-        raiseButton.textContent = `Raise to $${raiseSlider.value}`;
-    };
-    
-    document.getElementById('pokerFold').onclick = () => pokerAct('fold', gameData);
-    document.getElementById('pokerCheck').onclick = () => pokerAct('check', gameData);
-    document.getElementById('pokerCall').onclick = () => pokerAct('call', gameData);
-    document.getElementById('pokerRaise').onclick = () => {
-        pokerAct('raise', gameData, parseInt(raiseSlider.value));
-    };
+    if (raiseSlider && raiseButton) {
+        raiseSlider.min = Math.min(minRaise, maxRaise);
+        raiseSlider.max = maxRaise;
+        raiseSlider.value = raiseSlider.min;
+        raiseButton.textContent = `Raise to $${raiseSlider.min}`;
+        
+        raiseSlider.oninput = () => {
+            raiseButton.textContent = `Raise to $${raiseSlider.value}`;
+        };
+        
+        document.getElementById('pokerFold').onclick = () => pokerAct('fold', gameData);
+        document.getElementById('pokerCheck').onclick = () => pokerAct('check', gameData);
+        document.getElementById('pokerCall').onclick = () => pokerAct('call', gameData);
+        document.getElementById('pokerRaise').onclick = () => {
+            pokerAct('raise', gameData, parseInt(raiseSlider.value));
+        };
+    }
 
     if (fbTurnTimer) clearTimeout(fbTurnTimer);
     const timerBar = document.getElementById('pokerTimerBar');
-    timerBar.style.transition = 'none';
-    timerBar.style.width = '100%';
-    timerBar.getBoundingClientRect(); 
-    timerBar.style.transition = 'width 30s linear';
-    timerBar.style.width = '0%';
+    if (timerBar) {
+        timerBar.style.transition = 'none';
+        timerBar.style.width = '100%';
+        timerBar.getBoundingClientRect(); // Force reflow
+        timerBar.style.transition = 'width 30s linear';
+        timerBar.style.width = '0%';
+    }
 
     fbTurnTimer = setTimeout(() => {
         showMessage("Time's up! Auto-folding.", 'error');
@@ -801,22 +838,26 @@ async function checkGameLogic(gameData) {
     const hostId = gameData.dealer || gameData.playerOrder[0];
     if (hostId !== fbPlayerId) return; // Not our job
     
+    // 1. Start game if waiting and 2+ players
     if (gameData.status === 'waiting' && gameData.playerOrder.length >= 2) {
         let newGame = beginHand(gameData);
         await updateDoc(gameRef, newGame);
         return;
     }
     
+    // 2. Check if betting round is over
     if (gameData.status === 'playing' && gameData.currentTurn === null) {
         let newGame = advanceBettingRound(gameData);
         await updateDoc(gameRef, newGame);
         return;
     }
     
+    // 3. Check if hand is over
     if (gameData.status === 'showdown') {
-        await new Promise(r => setTimeout(r, 4000));
+        // Calculate winner, award pot, and start next hand
+        await new Promise(r => setTimeout(r, 4000)); // Pause for drama
         let newGame = calculateShowdown(gameData);
-        newGame = beginHand(newGame);
+        newGame = beginHand(newGame); // Start next hand
         await updateDoc(gameRef, newGame);
     }
 }
