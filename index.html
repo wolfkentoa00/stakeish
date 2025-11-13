@@ -8,8 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Using Inter font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
-    
-    <!-- FIX: Loading your local style.css -->
+    <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="min-h-screen flex flex-col">
@@ -42,17 +41,35 @@
         <!-- Sidebar Navigation -->
         <nav class="w-1/5 2xl:w-1/6 bg-[#1a2c38] rounded-lg shadow-lg p-4 h-max sticky top-24">
             <ul class="space-y-2">
-                <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="limbo">Limbo</button></li>
-                <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="blackjack">Blackjack</button></li>
-                <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="slots">Slots</button></li>
-                <li><button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="scratch">Scratch Off</button></li>
-                <!-- Removed Poker Button -->
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="limbo">
+                        Limbo
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="blackjack">
+                        Blackjack
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="slots">
+                        Slots
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="scratch">
+                        Scratch Off
+                    </button>
+                </li>
             </ul>
         </nav>
 
         <!-- Game Area -->
         <main id="game-area" class="w-4/5 2xl:w-5/6">
-            <div class="flex items-center justify-center h-64"><p class="text-2xl text-gray-500 animate-pulse">Loading games...</p></div>
+            <!-- Game content will be loaded here by main.js -->
+            <div class="flex items-center justify-center h-64">
+                <p class="text-2xl text-gray-500 animate-pulse">Loading games...</p>
+            </div>
         </main>
     </div>
 
@@ -67,7 +84,9 @@
                 <p class="text-gray-300 mb-4">This is a simulation. Add any amount to your balance for free.</p>
                 <label for="depositAmount" class="block text-sm font-medium text-gray-300 mb-1">Amount</label>
                 <input type="number" id="depositAmount" class="game-input w-full p-3 text-lg" placeholder="e.g., 1000" value="1000">
-                <button id="depositButton" class="btn-bet w-full py-3 rounded-lg text-lg mt-6">Add to Balance</button>
+                <button id="depositButton" class="btn-bet w-full py-3 rounded-lg text-lg mt-6">
+                    Add to Balance
+                </button>
             </div>
         </div>
     </div>
@@ -77,9 +96,7 @@
         <span id="messageText"></span>
     </div>
 
-    <!-- 
-      FIX: Removed type="module"
-    -->
+    <!-- Main JavaScript File -->
     <script src="main.js"></script>
 </body>
 </html>
