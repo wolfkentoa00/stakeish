@@ -1,136 +1,112 @@
-<!-- 
-  This file contains the UI for the Poker Lobby and Game Table.
-  All the logic will be attached by the 'initPoker' function in main.js.
--->
 <div id="game-poker" class="game-container bg-[#1a2c38] rounded-lg shadow-2xl p-6 lg:p-8">
 
-  <!-- Poker Lobby (Visible by default) -->
-  <div id="pokerLobby">
-    <h1 class="text-3xl font-bold mb-2 text-white">Texas Hold'em Poker</h1>
-    <p class="text-gray-400 mb-6">Create a room or join one with a code to play with friends.</p>
-    
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+    <!-- Lobby View -->
+    <div id="pokerLobby">
+        <h1 class="text-3xl font-bold mb-6 text-white">Multiplayer Poker</h1>
+        <p class="text-gray-400 mb-4">Your Anonymous User ID: <span id="pokerUserId" class="font-mono">Loading...</span></p>
+        <p class="text-gray-300 mb-6">Buy-in is $1000. Your chips will be returned when you leave.</p>
 
-      <!-- Create Room -->
-      <div class="bg-[#2c4051] rounded-lg p-6">
-        <h2 class="text-2xl font-bold text-white mb-4">Create a New Game</h2>
-        <p class="text-gray-300 mb-4">This will cost $1000 from your balance to buy-in.</p>
-        <button id="pokerCreateButton" class="btn-bet w-full py-3 rounded-lg text-lg">
-          Create Game
-        </button>
-      </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Create Game -->
+            <div class="bg-[#2c4051] rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Create Game</h2>
+                <p class="text-gray-400 mb-4">Start a new game and get a code to share.</p>
+                <button id="pokerCreateButton" class="btn-bet w-full py-3 rounded-lg text-lg">
+                    Create Game
+                </button>
+            </div>
 
-      <!-- Join Room -->
-      <div class="bg-[#2c4051] rounded-lg p-6">
-        <h2 class="text-2xl font-bold text-white mb-4">Join an Existing Game</h2>
-        <p class="text-gray-300 mb-4">Enter the 6-digit game code. ($1000 buy-in)</p>
-        <input type="text" id="pokerJoinCode" class="game-input w-full p-3 text-lg uppercase" placeholder="ABCDEF" maxlength="6">
-        <button id="pokerJoinButton" class="btn-bet-mod w-full py-3 rounded-lg text-lg mt-4">
-          Join Game
-        </button>
-      </div>
-    </div>
-    
-    <div class="text-center mt-6">
-      <p class="text-gray-500">Your User ID: <span id="pokerUserId" class="font-mono text-gray-400">Loading...</span></p>
-      <p id="pokerLobbyStatus" class="text-yellow-400 h-6 mt-2"></p>
-    </div>
-  </div>
-
-  <!-- Poker Game Table (Hidden by default) -->
-  <div id="pokerTable" class="hidden">
-    <div class="flex justify-between items-center mb-4">
-      <h1 class="text-3xl font-bold text-white">Poker Table</h1>
-      <div>
-        <span class="text-gray-400">Game Code:</span>
-        <span id="pokerGameCode" class="text-xl font-bold text-yellow-400 font-mono"></span>
-      </div>
-      <button id="pokerLeaveButton" class="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded-lg">
-        Leave Game
-      </button>
-    </div>
-
-    <!-- The Table -->
-    <div class="bg-green-800 border-8 border-[#2c4051] rounded-lg p-6 min-h-[500px] relative flex flex-col justify-between">
-      
-      <!-- Opponent Seats (Max 5 opponents) -->
-      <div class="flex justify-around items-start">
-        <div id="seat-1" class="poker-seat"></div>
-        <div id="seat-2" class="poker-seat"></div>
-        <div id="seat-3" class="poker-seat"></div>
-      </div>
-      
-      <!-- Community Cards & Pot -->
-      <div class="flex flex-col items-center my-4">
-        <div id="pokerPot" class="text-white text-xl font-bold mb-2">Pot: $0</div>
-        <div id="pokerCommunityCards" class="flex space-x-2 h-24">
-          <!-- Community cards appear here -->
+            <!-- Join Game -->
+            <div class="bg-[#2c4051] rounded-lg p-6">
+                <h2 class="text-2xl font-bold text-white mb-4">Join Game</h2>
+                <label for="pokerJoinCode" class="block text-sm font-medium text-gray-300 mb-1">Game Code</label>
+                <input type="text" id="pokerJoinCode" maxlength="6" class="game-input w-full p-3 text-lg uppercase" placeholder="ABC123">
+                <button id="pokerJoinButton" class="btn-bet w-full py-3 rounded-lg text-lg mt-4">
+                    Join Game
+                </button>
+            </div>
         </div>
-        <div id="pokerGameStatus" class="text-white text-lg font-semibold mt-2 h-8"></div>
-      </div>
-      
-      <!-- More Opponents -->
-      <div class="flex justify-between items-end">
-        <div id="seat-4" class="poker-seat"></div>
-        <div id="seat-5" class="poker-seat"></div>
-      </div>
-
-      <!-- Main Player Seat (Always bottom center) -->
-      <div id="seat-0" class="poker-seat absolute bottom-4 left-1/2 -translate-x-1/2"></div>
     </div>
 
-    <!-- Player Action Timer -->
-    <div id="pokerTimer" class="w-full bg-gray-700 h-2 rounded-full mt-4 overflow-hidden hidden">
-      <div id="pokerTimerBar" class="bg-yellow-400 h-full" style="width: 100%;"></div>
-    </div>
+    <!-- Table View -->
+    <div id="pokerTable" class="hidden">
+        <div class="flex justify-between items-center mb-4">
+            <h1 class="text-3xl font-bold text-white">Texas Hold'em</h1>
+            <div class="text-right">
+                <p class="text-gray-400">Game Code: <span id="pokerGameCode" class="font-mono text-white"></span></p>
+                <button id="pokerLeaveButton" class="text-sm text-red-500 hover:text-red-400">Leave Game</button>
+            </div>
+        </div>
 
-    <!-- Action Controls -->
-    <div id="pokerActionControls" class="flex justify-between items-center gap-4 mt-4">
-      <div class="flex gap-2">
-        <button id="pokerFold" class="btn-bet-mod bg-red-700/80 hover:bg-red-600 py-3 px-6 rounded-lg text-lg">Fold</button>
-        <button id="pokerCheck" class="btn-bet-mod py-3 px-6 rounded-lg text-lg">Check</button>
-        <button id="pokerCall" class="btn-bet-mod py-3 px-6 rounded-lg text-lg">Call $0</button>
-      </div>
-      
-      <div class="flex-1 flex items-center gap-2">
-        <input type="range" id="pokerRaiseSlider" class="flex-1" min="0" max="1000" step="10">
-        <button id="pokerRaise" class="btn-bet py-3 px-6 rounded-lg text-lg">Raise to $0</button>
-      </div>
+        <!-- Poker Table Layout -->
+        <div class="relative bg-green-800 border-8 border-yellow-700 rounded-full aspect-[2/1] p-12 flex items-center justify-center">
+            
+            <!-- Community Cards -->
+            <div class="flex flex-col items-center z-10">
+                <div id="pokerPot" class="text-white text-2xl font-bold mb-3">Pot: $0</div>
+                <div id="pokerCommunityCards" class="flex gap-2 h-[100px]">
+                    <!-- Cards will be injected here -->
+                </div>
+            </div>
+
+            <!-- Seats -->
+            <div id="seat-0" class="poker-seat absolute bottom-4 left-1/2 -translate-x-1/2"></div>
+            <div id="seat-1" class="poker-seat absolute bottom-0 left-1/4 -translate-x-1/2"></div>
+            <div id="seat-2" class="poker-seat absolute top-1/2 left-4 -translate-y-1/2"></div>
+            <div id="seat-3" class="poker-seat absolute top-4 left-1/2 -translate-x-1/2"></div>
+            <div id="seat-4" class="poker-seat absolute top-1/2 right-4 -translate-y-1/2"></div>
+            <div id="seat-5" class="poker-seat absolute bottom-0 right-1/4 translate-x-1/2"></div>
+        </div>
+
+        <!-- Action Controls -->
+        <div id="pokerTimer" class="w-full bg-gray-700 rounded-full h-2.5 mt-4 hidden">
+            <div id="pokerTimerBar" class="bg-yellow-400 h-2.5 rounded-full" style="width: 100%"></div>
+        </div>
+        <div id="pokerActionControls" class="flex flex-col md:flex-row items-center gap-4 mt-4 hidden">
+            <div class="flex-1 w-full flex gap-3">
+                <button id="pokerFold" class="btn-bet-mod flex-1 py-3 rounded-lg text-lg bg-red-800 hover:bg-red-700">Fold</button>
+                <button id="pokerCheck" class="btn-bet-mod flex-1 py-3 rounded-lg text-lg">Check</button>
+                <button id="pokerCall" class="btn-bet-mod flex-1 py-3 rounded-lg text-lg">Call $0</button>
+            </div>
+            <div class="flex-1 w-full flex items-center gap-3">
+                <input id="pokerRaiseSlider" type="range" min="20" max="1000" value="20" class="w-full h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer">
+                <button id="pokerRaise" class="btn-bet py-3 px-6 rounded-lg text-lg">Raise to $20</button>
+            </div>
+        </div>
     </div>
-  </div>
 </div>
 
-<!-- Extra CSS for the Poker Table -->
+<!-- Simple styles for poker cards and seats -->
 <style>
-  .poker-seat {
-    @apply w-36 h-28 bg-[#2c4051]/80 rounded-lg p-2 flex flex-col items-center justify-center shadow-lg border-2 border-transparent;
-  }
-  .poker-seat.active-turn {
-    @apply border-yellow-400 shadow-yellow-400/30;
-  }
-  .poker-seat.folded {
-    @apply opacity-40;
-  }
-  .seat-name {
-    @apply text-sm font-bold text-white truncate w-full text-center;
-  }
-  .seat-chips {
-    @apply text-lg font-bold text-yellow-400;
-  }
-  .seat-cards {
-    @apply flex space-x-1 h-12;
-  }
-  .seat-bet {
-    @apply text-sm text-white;
-  }
-  .poker-card {
-    @apply w-8 h-12 bg-white rounded flex flex-col items-center justify-center p-1 border border-gray-300 shadow-md;
-  }
-  .poker-card-back {
-    @apply w-8 h-12 bg-blue-600 rounded border border-blue-800 shadow-inner;
-  }
-  .poker-card.red { @apply text-red-600; }
-  .poker-card.black { @apply text-gray-900; }
-  .card-rank { @apply text-sm font-bold; }
-  .card-suit { @apply text-xs; }
+    .poker-seat {
+        @apply w-28 h-24 bg-black/30 rounded-lg p-2 text-center text-white border-2 border-transparent;
+        transition: all 0.3s ease;
+    }
+    .poker-seat.active-turn {
+        @apply border-yellow-400 shadow-xl;
+    }
+    .poker-seat.folded {
+        @apply opacity-50;
+    }
+    .seat-name { @apply text-sm font-bold truncate; }
+    .seat-chips { @apply text-xs text-gray-300; }
+    .seat-cards { @apply flex justify-center gap-1 mt-1 h-8; }
+    .seat-bet { @apply text-sm font-bold text-yellow-300 h-5 mt-1; }
+
+    .poker-card, .poker-card-back {
+        @apply w-6 h-8 bg-white rounded text-black font-bold relative text-center;
+        font-size: 10px;
+    }
+    .poker-card-back {
+        @apply bg-blue-600;
+    }
+    .poker-card .card-rank { @apply block; }
+    .poker-card .card-suit { @apply block; }
+    .poker-card.red { @apply text-red-600; }
+    
+    #pokerCommunityCards .poker-card {
+        @apply w-16 h-24 text-4xl;
+    }
+    #pokerCommunityCards .poker-card .card-rank { @apply text-4xl; }
+    #pokerCommunityCards .poker-card .card-suit { @apply text-3xl; }
 </style>
