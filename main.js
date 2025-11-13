@@ -41,14 +41,14 @@ window.modifyBet = modifyBet;
 
 function showMessage(message, type = 'error') {
     messageText.textContent = message;
+    messageBox.classList.remove('hidden', 'bg-red-600', 'bg-green-600');
+    
     if (type === 'error') {
-        messageBox.classList.remove('bg-green-600');
         messageBox.classList.add('bg-red-600');
     } else if (type === 'success') {
-        messageBox.classList.remove('bg-red-600');
         messageBox.classList.add('bg-green-600');
     }
-    messageBox.classList.remove('hidden');
+    
     setTimeout(() => {
         messageBox.classList.add('hidden');
     }, 3000);
@@ -107,13 +107,14 @@ function initGame(gameName) {
         case 'blackjack': initBlackjack(); break;
         case 'slots': initSlots(); break;
         case 'scratch': initScratch(); break;
+        case 'mines': initMines(); break; // Added Mines
     }
 }
 
 // --- Event Listeners (Global) ---
 window.addEventListener('DOMContentLoaded', () => {
     updateBalanceDisplay();
-    loadGame('limbo');
+    loadGame('limbo'); // Default game
 
     walletButton.addEventListener('click', toggleModal);
     closeModal.addEventListener('click', toggleModal);
@@ -131,7 +132,7 @@ window.addEventListener('DOMContentLoaded', () => {
 // --- GAME LOGIC ---
 // ------------------------------------
 
-// --- Limbo Logic ---
+// --- Limbo Logic (Unchanged) ---
 function initLimbo() {
     const btn = document.getElementById('playLimboButton');
     if(btn) btn.addEventListener('click', playLimbo);
@@ -185,9 +186,40 @@ async function playLimbo() {
     btn.disabled = false;
 }
 
-// --- Slots Logic ---
-const slotsSymbols = ['🍒', '🍋', '🍊', '🍉', '🔔', '🍀', '💎'];
-const slotsPayouts = { '💎': {3:50}, '🍀': {3:20}, '🔔': {3:15}, '🍉': {3:10}, '🍊': {3:5}, '🍋': {3:3}, '🍒': {3:2, 2:0.5} };
+// --- Slots Logic (Overhauled) ---
+const slotsSymbols = {
+    '🍒': 10, // Cherry (common)
+    '🍋': 8,
+    '🍊': 7,
+    '🍉': 6,
+    '🔔': 5,
+    '🍀': 4,
+    '💎': 2, // Diamond (rare)
+    '⭐': 3  // Wild (uncommon)
+};
+
+// Payouts: [Symbol, Count] -> Multiplier
+const slotsPayouts = {
+    '💎': { 3: 100 },
+    '🍀': { 3: 50 },
+    '🔔': { 3: 25 },
+    '🍉': { 3: 15 },
+    '🍊': { 3: 10 },
+    '🍋': { 3: 5 },
+    '🍒': { 3: 10, 2: 3, 1: 1 }, // Cherries pay for 1, 2, or 3
+};
+
+// Create a weighted pool for more "natural" spinning
+const slotsPool = [];
+for (const [symbol, weight] of Object.entries(slotsSymbols)) {
+    for (let i = 0; i < weight; i++) {
+        slotsPool.push(symbol);
+    }
+}
+
+function getSlotSpin() {
+    return slotsPool[Math.floor(Math.random() * slotsPool.length)];
+}
 
 function initSlots() {
     const btn = document.getElementById('playSlotsButton');
@@ -212,48 +244,73 @@ async function playSlots() {
     resultDiv.innerHTML = '<span class="animate-pulse text-gray-400">Spinning...</span>';
     resultDiv.className = "text-center mt-6 text-2xl font-bold"; 
 
-    const spin = setInterval(() => {
+    // Animate spinning
+    const spinInterval = setInterval(() => {
         reelContainer.innerHTML = `
-            <div class="reel p-4 spinning">${slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]}</div>
-            <div class="reel p-4 spinning">${slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]}</div>
-            <div class="reel p-4 spinning">${slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]}</div>
+            <div class="reel p-4 spinning">${getSlotSpin()}</div>
+            <div class="reel p-4 spinning">${getSlotSpin()}</div>
+            <div class="reel p-4 spinning">${getSlotSpin()}</div>
         `;
     }, 100);
 
     await new Promise(r => setTimeout(r, 1500));
-    clearInterval(spin);
+    clearInterval(spinInterval);
 
-    const final = [
-        slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)],
-        slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)],
-        slotsSymbols[Math.floor(Math.random()*slotsSymbols.length)]
-    ];
+    // Get final result
+    const finalReels = [getSlotSpin(), getSlotSpin(), getSlotSpin()];
+    reelContainer.innerHTML = finalReels.map(s => `<div class="reel p-4">${s}</div>`).join('');
 
-    reelContainer.innerHTML = final.map(s => `<div class="reel p-4">${s}</div>`).join('');
-
+    // --- Calculate Winnings ---
     let win = 0;
-    const counts = {};
-    final.forEach(s => counts[s] = (counts[s]||0)+1);
+    
+    // Replace wilds ('⭐') for win calculation.
+    // This simple logic checks for the best 3-of-a-kind.
+    // A more complex system would check all combinations.
+    const symbolCounts = {};
+    let nonWildSymbol = finalReels.find(s => s !== '⭐');
+    
+    // Count symbols
+    finalReels.forEach(s => {
+        const symbolToCount = (s === '⭐' && nonWildSymbol) ? nonWildSymbol : s;
+        symbolCounts[symbolToCount] = (symbolCounts[symbolToCount] || 0) + 1;
+    });
 
-    if (final[0] === final[1] && final[1] === final[2]) {
-        if (slotsPayouts[final[0]]?.[3]) win = bet * slotsPayouts[final[0]][3];
-    } else if (counts['🍒'] === 2) {
-        win = bet * slotsPayouts['🍒'][2];
+    // Check payouts from highest to lowest
+    let winFound = false;
+    for (const [symbol, payouts] of Object.entries(slotsPayouts).reverse()) { // Check rare ones first
+        if (symbolCounts[symbol]) {
+            if (symbolCounts[symbol] === 3 && payouts[3]) {
+                win = bet * payouts[3];
+                winFound = true;
+                break;
+            } else if (symbolCounts[symbol] === 2 && payouts[2]) {
+                win = bet * payouts[2];
+                winFound = true;
+                break;
+            } else if (symbolCounts[symbol] === 1 && payouts[1]) {
+                win = bet * payouts[1];
+                winFound = true;
+                break;
+            }
+        }
     }
 
+    // --- Display Result ---
     if (win > 0) {
         balance += win;
         resultDiv.textContent = `You won $${win.toFixed(2)}!`;
         resultDiv.classList.add('text-green-400');
+        resultDiv.classList.remove('text-red-500');
     } else {
         resultDiv.textContent = `You lost $${bet.toFixed(2)}.`;
         resultDiv.classList.add('text-red-500');
+        resultDiv.classList.remove('text-green-400');
     }
     updateBalanceDisplay();
     btn.disabled = false;
 }
 
-// --- Blackjack Logic ---
+// --- Blackjack Logic (Unchanged) ---
 let bjState = { deck: [], hands: [], dealer: [], bet: 0, activeHand: 0, status: 'betting' };
 const SUITS = ['♥', '♦', '♠', '♣'];
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -275,7 +332,7 @@ function createCardEl(card) {
     el.className = `card ${color} bg-white rounded-lg w-[70px] h-[100px] flex items-center justify-center relative shadow-md border border-gray-200 text-xl font-bold`;
     
     if (card.hidden) {
-        el.className += " bg-blue-500";
+        el.className += " card-back"; // Use CSS class for card back
         el.innerHTML = ""; 
     } else {
         el.innerHTML = `<span class="absolute top-1 left-1 text-sm">${card.rank}</span>${card.suit}<span class="absolute bottom-1 right-1 text-sm transform rotate-180">${card.rank}</span>`;
@@ -357,7 +414,7 @@ function bjStand() {
 }
 
 function bjDouble() {
-    if (balance < bjState.bet) return;
+    if (balance < bjState.bet) { showMessage("Not enough balance to double.", 'error'); return; }
     balance -= bjState.bet;
     bjState.bet *= 2;
     updateBalanceDisplay();
@@ -368,8 +425,6 @@ function bjDouble() {
 }
 
 function bjSplit() {
-    // Simplified split for brevity: just duplicates bet and card
-    if (balance < bjState.bet) return;
     showMessage("Split feature coming soon!", 'success');
 }
 
@@ -404,103 +459,182 @@ function endBJRound(msg) {
     document.getElementById('blackjackActionControls').classList.add('hidden');
 }
 
-// --- Scratch Off Logic ---
-let scratchState = { prize: 0, isRevealed: false, isDrawing: false };
+function checkBJTurn() {
+    const pVal = getHandVal(bjState.hands[bjState.activeHand]);
+    if (pVal === 21) {
+        bjDealerPlay();
+    }
+}
+
+// --- Scratch Off Logic (Remade) ---
+let scratchState = { 
+    prize: 0, 
+    isRevealed: false, 
+    isDrawing: false,
+    ctx: null,
+    canvas: null
+};
 
 function initScratch() {
     const btn = document.getElementById('buyScratchButton');
     const canvas = document.getElementById('scratchCanvas');
     if (!btn || !canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    scratchState.canvas = canvas;
+    scratchState.ctx = canvas.getContext('2d');
+    
+    // Set initial state: canvas hidden, instructions visible
+    scratchState.canvas.style.visibility = 'hidden';
+    document.getElementById('scratchInstructions').style.visibility = 'visible';
 
-    btn.addEventListener('click', () => buyScratchTicket(ctx, canvas));
+    btn.addEventListener('click', buyScratchTicket);
     
     // Mouse Events
-    canvas.addEventListener('mousedown', (e) => startScratch(e, ctx, canvas));
-    canvas.addEventListener('mousemove', (e) => doScratch(e, ctx, canvas));
-    canvas.addEventListener('mouseup', () => stopScratch(ctx, canvas));
-    canvas.addEventListener('mouseout', () => stopScratch(ctx, canvas));
+    canvas.addEventListener('mousedown', startScratch);
+    canvas.addEventListener('mousemove', doScratch);
+    canvas.addEventListener('mouseup', stopScratch);
+    canvas.addEventListener('mouseout', stopScratch);
     
     // Touch Events
-    canvas.addEventListener('touchstart', (e) => startScratch(e, ctx, canvas), {passive: false});
-    canvas.addEventListener('touchmove', (e) => doScratch(e, ctx, canvas), {passive: false});
-    canvas.addEventListener('touchend', () => stopScratch(ctx, canvas));
+    canvas.addEventListener('touchstart', startScratch, {passive: false});
+    canvas.addEventListener('touchmove', doScratch, {passive: false});
+    canvas.addEventListener('touchend', stopScratch);
 }
 
-function buyScratchTicket(ctx, canvas) {
+function buyScratchTicket() {
     const betInput = document.getElementById('scratchBetAmount');
     const bet = parseFloat(betInput.value);
     
-    if (isNaN(bet) || bet <= 0 || bet > balance) { showMessage("Invalid amount", 'error'); return; }
+    if (isNaN(bet) || bet <= 0 || bet > balance) { 
+        showMessage("Invalid ticket price.", 'error'); 
+        return; 
+    }
     
     balance -= bet;
     updateBalanceDisplay();
     
     document.getElementById('buyScratchButton').disabled = true;
-    document.getElementById('scratchInstructions').classList.add('hidden');
+    document.getElementById('scratchInstructions').style.visibility = 'hidden';
     document.getElementById('scratchResult').textContent = '';
     
     // Reset State
     scratchState.isRevealed = false;
-    scratchState.prize = (Math.random() < 0.3) ? bet * 2 : 0; // 30% win rate example
+    scratchState.isDrawing = false;
     
-    // Setup Prize Text
-    const prizeDiv = document.getElementById('scratchPrize');
-    prizeDiv.textContent = scratchState.prize > 0 ? `$${scratchState.prize.toFixed(2)}` : "$0.00";
-    prizeDiv.classList.remove('hidden');
+    // Determine prize
+    const rand = Math.random();
+    if (rand < 0.1) { // 10% chance for 5x
+        scratchState.prize = bet * 5;
+    } else if (rand < 0.3) { // 20% chance for 2x
+        scratchState.prize = bet * 2;
+    } else {
+        scratchState.prize = 0;
+    }
+
+    // --- Draw on Canvas ---
+    const ctx = scratchState.ctx;
+    const canvas = scratchState.canvas;
     
-    // Setup Canvas
-    canvas.classList.remove('hidden');
+    // 1. Clear canvas
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 2. Draw the prize text underneath
     ctx.globalCompositeOperation = 'source-over';
+    ctx.fillStyle = scratchState.prize > 0 ? '#fde047' : '#9ca3af'; // Yellow or Gray
+    ctx.font = 'bold 48px Inter';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const prizeText = scratchState.prize > 0 ? `$${scratchState.prize.toFixed(2)}` : "No Win";
+    ctx.fillText(prizeText, canvas.width / 2, canvas.height / 2);
+    
+    // 3. Draw the scratchable cover on top
     ctx.fillStyle = '#3a5063'; // The scratch cover color
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Make canvas visible
+    canvas.style.visibility = 'visible';
 }
 
-function startScratch(e, ctx, canvas) {
+function getScratchPos(e) {
+    const canvas = scratchState.canvas;
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    let clientX, clientY;
+    if (e.touches) {
+        clientX = e.touches[0].clientX;
+        clientY = e.touches[0].clientY;
+    } else {
+        clientX = e.clientX;
+        clientY = e.clientY;
+    }
+    
+    return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY
+    };
+}
+
+function startScratch(e) {
     if (scratchState.isRevealed) return;
     e.preventDefault();
     scratchState.isDrawing = true;
-    doScratch(e, ctx, canvas);
+    const pos = getScratchPos(e);
+    scratch(pos.x, pos.y);
 }
 
-function doScratch(e, ctx, canvas) {
+function doScratch(e) {
     if (!scratchState.isDrawing || scratchState.isRevealed) return;
     e.preventDefault();
-    
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX || e.touches[0].clientX) - rect.left;
-    const y = (e.clientY || e.touches[0].clientY) - rect.top;
-    
-    // Adjust for canvas scaling if CSS width != attribute width
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
+    const pos = getScratchPos(e);
+    scratch(pos.x, pos.y);
+}
 
+function stopScratch() {
+    if (!scratchState.isDrawing) return;
+    scratchState.isDrawing = false;
+    checkScratchWin(); // Check win condition after user stops drawing
+}
+
+function scratch(x, y) {
+    const ctx = scratchState.ctx;
     ctx.globalCompositeOperation = 'destination-out';
     ctx.beginPath();
-    ctx.arc(x * scaleX, y * scaleY, 20, 0, Math.PI * 2);
+    ctx.arc(x, y, 20, 0, Math.PI * 2);
     ctx.fill();
 }
 
-function stopScratch(ctx, canvas) {
-    if (!scratchState.isDrawing) return;
-    scratchState.isDrawing = false;
-    checkScratchWin(ctx, canvas);
-}
-
-function checkScratchWin(ctx, canvas) {
+function checkScratchWin() {
     if (scratchState.isRevealed) return;
+    
+    const ctx = scratchState.ctx;
+    const canvas = scratchState.canvas;
     
     // Check how much is cleared
     const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height).data;
     let cleared = 0;
-    for (let i = 3; i < imgData.length; i += 4) {
-        if (imgData[i] === 0) cleared++;
+    const totalPixels = canvas.width * canvas.height;
+    
+    for (let i = 3; i < imgData.length; i += 4) { // Check alpha channel
+        if (imgData[i] === 0) {
+            cleared++;
+        }
     }
     
-    if (cleared / (canvas.width * canvas.height) > 0.4) { // Win if 40% cleared
+    // If >30% is cleared, reveal all
+    if (cleared / totalPixels > 0.3) { 
         scratchState.isRevealed = true;
         ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear all
+        
+        // Redraw prize text so it stays
+        ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = scratchState.prize > 0 ? '#fde047' : '#9ca3af';
+        ctx.font = 'bold 48px Inter';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const prizeText = scratchState.prize > 0 ? `$${scratchState.prize.toFixed(2)}` : "No Win";
+        ctx.fillText(prizeText, canvas.width / 2, canvas.height / 2);
         
         const resDiv = document.getElementById('scratchResult');
         if (scratchState.prize > 0) {
@@ -513,11 +647,222 @@ function checkScratchWin(ctx, canvas) {
         }
         updateBalanceDisplay();
         
-        setTimeout(() => {
-            document.getElementById('buyScratchButton').disabled = false;
-            canvas.classList.add('hidden');
-            document.getElementById('scratchPrize').classList.add('hidden');
-            document.getElementById('scratchInstructions').classList.remove('hidden');
-        }, 2000);
+        setTimeout(resetScratchCard, 2000);
     }
+}
+
+function resetScratchCard() {
+    if (scratchState.canvas) {
+        scratchState.canvas.style.visibility = 'hidden';
+        scratchState.ctx.clearRect(0, 0, scratchState.canvas.width, scratchState.canvas.height);
+    }
+    document.getElementById('buyScratchButton').disabled = false;
+    document.getElementById('scratchInstructions').style.visibility = 'visible';
+    document.getElementById('scratchResult').textContent = '';
+}
+
+
+// --- Mines Logic (New Game) ---
+let minesState = {
+    grid: [], // 25 elements: 'gem' or 'mine'
+    revealed: [], // 25 elements: true or false
+    bet: 0,
+    minesCount: 0,
+    gemsFound: 0,
+    totalGems: 0,
+    currentMultiplier: 1,
+    nextMultiplier: 1,
+    active: false
+};
+
+const MINES_GRID_SIZE = 25;
+
+function initMines() {
+    // Populate grid with initial tiles
+    const gridContainer = document.getElementById('minesGrid');
+    gridContainer.innerHTML = '';
+    for (let i = 0; i < MINES_GRID_SIZE; i++) {
+        const tile = document.createElement('button');
+        tile.className = 'mines-tile';
+        tile.dataset.index = i;
+        tile.disabled = true;
+        tile.addEventListener('click', () => onMinesTileClick(i));
+        gridContainer.appendChild(tile);
+    }
+    
+    document.getElementById('playMinesButton').addEventListener('click', startMines);
+    document.getElementById('cashoutMinesButton').addEventListener('click', cashoutMines);
+}
+
+function startMines() {
+    if (minesState.active) {
+        showMessage("Game is already in progress. Cash out or hit a mine.", 'error');
+        return;
+    }
+    
+    const betInput = document.getElementById('minesBetAmount');
+    const minesInput = document.getElementById('minesCount');
+    const bet = parseFloat(betInput.value);
+    const minesCount = parseInt(minesInput.value);
+    
+    if (isNaN(bet) || bet <= 0 || bet > balance) { showMessage("Invalid bet.", 'error'); return; }
+    if (isNaN(minesCount) || minesCount < 3 || minesCount > 24) { showMessage("Mines must be between 3 and 24.", 'error'); return; }
+
+    balance -= bet;
+    updateBalanceDisplay();
+    
+    minesState = {
+        grid: [],
+        revealed: new Array(MINES_GRID_SIZE).fill(false),
+        bet: bet,
+        minesCount: minesCount,
+        gemsFound: 0,
+        totalGems: MINES_GRID_SIZE - minesCount,
+        currentMultiplier: 1,
+        active: true
+    };
+    
+    // Generate grid
+    const grid = new Array(MINES_GRID_SIZE).fill('gem');
+    let minesPlaced = 0;
+    while (minesPlaced < minesCount) {
+        const index = Math.floor(Math.random() * MINES_GRID_SIZE);
+        if (grid[index] === 'gem') {
+            grid[index] = 'mine';
+            minesPlaced++;
+        }
+    }
+    minesState.grid = grid;
+    
+    // Update UI
+    document.getElementById('playMinesButton').classList.add('hidden');
+    document.getElementById('cashoutMinesButton').classList.remove('hidden');
+    document.getElementById('cashoutMinesButton').disabled = true;
+    document.getElementById('cashoutMinesButton').textContent = 'Cashout $0.00';
+    document.getElementById('minesBetAmount').disabled = true;
+    document.getElementById('minesCount').disabled = true;
+    document.getElementById('minesResult').textContent = '';
+    
+    // Reset tiles
+    const tiles = document.querySelectorAll('.mines-tile');
+    tiles.forEach(tile => {
+        tile.disabled = false;
+        tile.innerHTML = '';
+        tile.classList.remove('gem', 'mine');
+    });
+
+    updateMinesDisplay();
+}
+
+function onMinesTileClick(index) {
+    if (!minesState.active || minesState.revealed[index]) return;
+    
+    minesState.revealed[index] = true;
+    const tile = document.querySelector(`.mines-tile[data-index='${index}']`);
+    tile.disabled = true;
+
+    if (minesState.grid[index] === 'mine') {
+        // --- GAME OVER ---
+        tile.classList.add('mine');
+        tile.innerHTML = '<i class="fas fa-bomb"></i>';
+        endMinesGame(false); // false = loss
+    } else {
+        // --- FOUND GEM ---
+        tile.classList.add('gem');
+        tile.innerHTML = '<i class="fas fa-gem"></i>';
+        minesState.gemsFound++;
+        
+        // Update multipliers
+        minesState.currentMultiplier = minesState.nextMultiplier;
+        minesState.nextMultiplier = calculateMinesMultiplier(minesState.gemsFound + 1, minesState.minesCount);
+        
+        document.getElementById('cashoutMinesButton').disabled = false;
+        const cashoutAmount = (minesState.bet * minesState.currentMultiplier).toFixed(2);
+        document.getElementById('cashoutMinesButton').textContent = `Cashout $${cashoutAmount}`;
+        
+        updateMinesDisplay();
+        
+        // Check for win (all gems found)
+        if (minesState.gemsFound === minesState.totalGems) {
+            endMinesGame(true); // true = win
+        }
+    }
+}
+
+function cashoutMines() {
+    if (!minesState.active || minesState.gemsFound === 0) return;
+    
+    const winnings = minesState.bet * minesState.currentMultiplier;
+    balance += winnings;
+    updateBalanceDisplay();
+    showMessage(`Cashed out $${winnings.toFixed(2)}!`, 'success');
+    
+    endMinesGame(true); // true = win (by cashing out)
+}
+
+function endMinesGame(didWin) {
+    minesState.active = false;
+    
+    // Show result message
+    const resDiv = document.getElementById('minesResult');
+    if (didWin) {
+        resDiv.textContent = `You won!`;
+        resDiv.className = "text-center mt-6 text-2xl font-bold text-green-400";
+    } else {
+        resDiv.textContent = 'You hit a mine!';
+        resDiv.className = "text-center mt-6 text-2xl font-bold text-red-500";
+    }
+    
+    // Reveal all tiles
+    const tiles = document.querySelectorAll('.mines-tile');
+    tiles.forEach((tile, i) => {
+        tile.disabled = true;
+        if (!minesState.revealed[i]) {
+            if (minesState.grid[i] === 'mine') {
+                tile.classList.add('mine');
+                tile.innerHTML = '<i class="fas fa-bomb"></i>';
+            } else {
+                tile.classList.add('gem');
+                tile.innerHTML = '<i class="fas fa-gem"></i>';
+            }
+        }
+    });
+    
+    // Reset controls
+    document.getElementById('playMinesButton').classList.remove('hidden');
+    document.getElementById('cashoutMinesButton').classList.add('hidden');
+    document.getElementById('minesBetAmount').disabled = false;
+    document.getElementById('minesCount').disabled = false;
+}
+
+function updateMinesDisplay() {
+    document.getElementById('minesGemsFound').textContent = minesState.gemsFound;
+    document.getElementById('minesNextMultiplier').textContent = `${minesState.nextMultiplier.toFixed(2)}x`;
+}
+
+// Binomial Coefficient: nCr = n! / (r! * (n-r)!)
+function combinations(n, k) {
+    if (k < 0 || k > n) return 0;
+    if (k === 0 || k === n) return 1;
+    if (k > n / 2) k = n - k;
+    let res = 1;
+    for (let i = 1; i <= k; i++) {
+        res = res * (n - i + 1) / i;
+    }
+    return res;
+}
+
+// Stake's Mines Multiplier Formula (approximate)
+// 0.99 (house edge) * C(25, gems) / C(25-mines, gems)
+function calculateMinesMultiplier(gemsToFind, minesCount) {
+    const houseEdge = 0.99;
+    const totalTiles = MINES_GRID_SIZE;
+    const totalGems = totalTiles - minesCount;
+    
+    const c1 = combinations(totalTiles, gemsToFind);
+    const c2 = combinations(totalGems, gemsToFind);
+    
+    if (c2 === 0) return 1; // Avoid division by zero
+    
+    return (houseEdge * c1 / c2) || 1;
 }
