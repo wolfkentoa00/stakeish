@@ -149,7 +149,35 @@ body {
 
 /* Scratch Off Canvas */
 #scratchCanvas {
-    background-color: #3a5063; /* The "unscratched" color */
+    background-color: transparent; /* Canvas itself is clear */
     border-radius: 8px;
     cursor: grabbing; /* Show a "grab" cursor */
+    /* Ensure it's hidden when not in use */
+    visibility: hidden; 
+}
+
+/* Mines Game Styles */
+.mines-tile {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    background-color: #3a5063;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 1.5rem;
+    color: white;
+}
+.mines-tile:not(:disabled):hover {
+    background-color: #4a657c;
+}
+.mines-tile:disabled {
+    cursor: not-allowed;
+    opacity: 0.9;
+}
+.mines-tile.gem {
+    background-color: #059669; /* green-700 */
+    color: #ffffff;
+}
+.mines-tile.mine {
+    background-color: #dc2626; /* red-600 */
+    color: #ffffff;
 }
