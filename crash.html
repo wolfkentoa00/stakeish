@@ -1,0 +1,41 @@
+<div id="game-crash" class="game-container bg-[#1a2c38] rounded-lg shadow-2xl p-6 lg:p-8">
+    <h1 class="text-3xl font-bold mb-6 text-white">Crash</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Game Controls -->
+        <div class="md:col-span-1 bg-[#2c4051] rounded-lg p-6 flex flex-col gap-4">
+            <div>
+                <label for="crashBetAmount" class="block text-sm font-medium text-gray-300 mb-1">Bet Amount</label>
+                <div class="flex items-center gap-2">
+                    <input type="number" id="crashBetAmount" class="game-input w-full p-2" value="10">
+                </div>
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('crashBetAmount', 0.5)">/2</button>
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('crashBetAmount', 2)">x2</button>
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('crashBetAmount', 'max')">Max</button>
+                </div>
+            </div>
+            <div>
+                <label for="crashAutoCashout" class="block text-sm font-medium text-gray-300 mb-1">Auto Cashout (e.g., 2.0x)</label>
+                <input type="number" id="crashAutoCashout" class="game-input w-full p-2" placeholder="Optional" step="0.1" min="1.01">
+            </div>
+            <button id="playCrashButton" class="btn-bet w-full py-3 rounded-lg text-lg">
+                Place Bet
+            </button>
+        </div>
+
+        <!-- Game Display -->
+        <div class="md:col-span-2 bg-[#2c4051] rounded-lg p-6 min-h-[300px] relative overflow-hidden">
+            <!-- Canvas for the graph line -->
+            <canvas id="crashGameCanvas" class="absolute top-0 left-0 w-full h-full"></canvas>
+            
+            <!-- Text overlay -->
+            <div id="crashGameDisplay" class="absolute inset-0 flex items-center justify-center text-center">
+                <!-- This will be controlled by JS -->
+                <!-- <div class="text-5xl font-bold text-gray-400">Waiting for next round...</div> -->
+                <!-- <div class="text-7xl font-bold text-white">2.54x</div> -->
+                <!-- <div class="text-7xl font-bold text-red-500">Crashed @ 3.12x</div> -->
+            </div>
+        </div>
+    </div>
+</div>
