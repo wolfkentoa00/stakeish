@@ -54,6 +54,7 @@ body {
     background-color: #3a5063;
     color: #7d8f9e;
     cursor: not-allowed;
+    background-image: none;
 }
 /* Modal background */
 .modal-backdrop {
@@ -96,47 +97,26 @@ body {
 .btn-bet-mod:hover {
     background-color: #3a5063;
 }
+.btn-bet-mod:disabled {
+    background-color: #2c4051;
+    color: #7d8f9e;
+    cursor: not-allowed;
+}
+
 
 /* Blackjack Card Styles */
+/* This is a simplified card element */
 .card {
     background-color: #ffffff;
-    color: #1a2c38;
     border-radius: 8px;
-    width: 70px;
-    height: 100px;
-    font-size: 1.5rem;
     font-weight: 700;
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: space-between;
     position: relative;
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     border: 1px solid #e5e7eb;
-}
-.card.red {
-    color: #ef4444; /* red-600 */
-}
-.card.black {
-    color: #1f2937; /* gray-800 */
-}
-.card-suit-top {
-    position: absolute;
-    top: 6px;
-    left: 8px;
-    font-size: 1rem;
-}
-.card-suit-bottom {
-    position: absolute;
-    bottom: 6px;
-    right: 8px;
-    font-size: 1rem;
-    transform: rotate(180deg);
-}
-.card-back {
-    background-color: #00aaff;
-    background-image: linear-gradient(135deg, #00aaff 25%, #0088cc 25%, #0088cc 50%, #00aaff 50%, #00aaff 75%, #0088cc 75%, #0088cc 100%);
-    background-size: 40px 40px;
-    color: transparent;
 }
 
 /* Blackjack Table */
@@ -180,4 +160,10 @@ body {
 .mines-tile.mine {
     background-color: #dc2626; /* red-600 */
     color: #ffffff;
+}
+
+/* NEW: Crash Game Display Text */
+#crashGameDisplay {
+    /* This allows the text to overlay the canvas */
+    z-index: 10;
 }
