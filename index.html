@@ -10,8 +10,10 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
     <!-- Main Stylesheet -->
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome for icons (for Mines) -->
+    <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Chart.js for the profit graph -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="min-h-screen flex flex-col">
 
@@ -26,8 +28,11 @@
                     </span>
                 </div>
                 
-                <!-- Wallet -->
-                <div class="flex items-center">
+                <!-- Wallet & Graph -->
+                <div class="flex items-center gap-2">
+                    <button id="graphButton" class="bg-[#2c4051] hover:bg-[#3a5063] text-white font-bold py-2 px-3 rounded-lg shadow-lg transition-colors duration-200" aria-label="Show Stats Graph">
+                        <i class="fas fa-chart-line"></i>
+                    </button>
                     <button id="walletButton" class="bg-[#2c4051] hover:bg-[#3a5063] text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200">
                         <span>Balance: $</span>
                         <span id="balanceDisplay">1000.00</span>
@@ -43,30 +48,46 @@
         <!-- Sidebar Navigation -->
         <nav class="w-1/5 2xl:w-1/6 bg-[#1a2c38] rounded-lg shadow-lg p-4 h-max sticky top-24">
             <ul class="space-y-2">
+                <!-- NEW: Crash Game -->
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="crash">
+                        <i class="fas fa-rocket w-6 text-center"></i> Crash
+                    </button>
+                </li>
                 <li>
                     <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="limbo">
-                        Limbo
+                        <i class="fas fa-gavel w-6 text-center"></i> Limbo
                     </button>
                 </li>
                 <li>
                     <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="blackjack">
-                        Blackjack
+                        <i class="fas fa-id-card w-6 text-center"></i> Blackjack
                     </button>
                 </li>
                 <li>
                     <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="slots">
-                        Slots
+                        <i class="fas fa-dice-d6 w-6 text-center"></i> Slots
                     </button>
                 </li>
                 <li>
                     <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="scratch">
-                        Scratch Off
+                        <i class="fas fa-coins w-6 text-center"></i> Scratch Off
                     </button>
                 </li>
-                <!-- New Mines Button -->
                 <li>
                     <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="mines">
-                        Mines
+                        <i class="fas fa-bomb w-6 text-center"></i> Mines
+                    </button>
+                </li>
+                 <!-- NEW: Other game ideas -->
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 opacity-50 cursor-not-allowed" disabled>
+                        <i class="fas fa-circle-notch w-6 text-center"></i> Plinko (Soon)
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 opacity-50 cursor-not-allowed" disabled>
+                        <i class="fas fa-dice w-6 text-center"></i> Dice (Soon)
                     </button>
                 </li>
             </ul>
@@ -98,6 +119,35 @@
             </div>
         </div>
     </div>
+
+    <!-- NEW: Graph Modal -->
+    <div id="graphModal" class="fixed inset-0 z-30 flex items-center justify-center hidden modal-backdrop">
+        <div class="bg-[#1a2c38] rounded-lg shadow-2xl p-8 w-full max-w-3xl mx-4">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-white">Profit Graph</h2>
+                <button id="closeGraphModal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+            </div>
+            <div class="bg-[#2c4051] rounded-lg p-4">
+                <canvas id="graphModalCanvas" class="w-full" height="150"></canvas>
+            </div>
+            <div class="mt-6 flex justify-between items-center">
+                <div class="flex gap-6">
+                    <div>
+                        <div class="text-sm text-gray-400">Total Wagered</div>
+                        <div id="graphTotalWagered" class="text-xl font-bold text-white">$0.00</div>
+                    </div>
+                    <div>
+                        <div class="text-sm text-gray-400">Total Profit</div>
+                        <div id="graphTotalProfit" class="text-xl font-bold text-white">$0.00</div>
+                    </div>
+                </div>
+                <button id="clearGraphButton" class="btn-bet-mod py-2 px-4 rounded-lg bg-red-800 hover:bg-red-700">
+                    <i class="fas fa-trash"></i> Clear Graph
+                </button>
+            </div>
+        </div>
+    </div>
+
 
     <!-- Notification/Message Box -->
     <div id="messageBox" class="fixed bottom-5 right-5 z-40 bg-red-600 text-white p-4 rounded-lg shadow-lg hidden max-w-sm">
