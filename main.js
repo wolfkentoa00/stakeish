@@ -310,7 +310,7 @@ async function playSlots() {
     btn.disabled = false;
 }
 
-// --- Blackjack Logic (Unchanged) ---
+// --- Blackjack Logic ---
 let bjState = { deck: [], hands: [], dealer: [], bet: 0, activeHand: 0, status: 'betting' };
 const SUITS = ['♥', '♦', '♠', '♣'];
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -329,13 +329,30 @@ function initBlackjack() {
 function createCardEl(card) {
     const el = document.createElement('div');
     const color = (card.suit === '♥' || card.suit === '♦') ? 'text-red-500' : 'text-gray-900';
-    el.className = `card ${color} bg-white rounded-lg w-[70px] h-[100px] flex items-center justify-center relative shadow-md border border-gray-200 text-xl font-bold`;
+    // Removed absolute/relative logic inside card to make them stack nicely in flex
+    el.className = `card ${color} bg-white rounded-lg w-[60px] h-[90px] sm:w-[70px] sm:h-[100px] flex flex-col items-center justify-between p-1 shadow-md border border-gray-200 text-xl font-bold select-none`;
     
     if (card.hidden) {
-        el.className += " card-back"; // Use CSS class for card back
+        el.className = "bg-blue-800 rounded-lg w-[60px] h-[90px] sm:w-[70px] sm:h-[100px] border-2 border-white shadow-md"; // Simple card back
         el.innerHTML = ""; 
     } else {
-        el.innerHTML = `<span class="absolute top-1 left-1 text-sm">${card.rank}</span>${card.suit}<span class="absolute bottom-1 right-1 text-sm transform rotate-180">${card.rank}</span>`;
+        // Top Left
+        const top = document.createElement('div');
+        top.className = "self-start text-sm leading-none";
+        top.innerHTML = `${card.rank}<br>${card.suit}`;
+        el.appendChild(top);
+
+        // Center Suit
+        const center = document.createElement('div');
+        center.className = "text-2xl";
+        center.innerHTML = card.suit;
+        el.appendChild(center);
+
+        // Bottom Right (Rotated)
+        const bot = document.createElement('div');
+        bot.className = "self-end text-sm leading-none transform rotate-180";
+        bot.innerHTML = `${card.rank}<br>${card.suit}`;
+        el.appendChild(bot);
     }
     return el;
 }
@@ -361,13 +378,52 @@ function getHandVal(hand) {
 function renderBJ() {
     const dealerDiv = document.getElementById('blackjackDealerHand');
     const playerDiv = document.getElementById('blackjackPlayerHand');
-    dealerDiv.innerHTML = ''; playerDiv.innerHTML = '';
     
+    // --- Render Dealer ---
+    dealerDiv.innerHTML = '';
+    dealerDiv.className = "flex justify-center gap-2"; // Center cards
     bjState.dealer.forEach(c => dealerDiv.appendChild(createCardEl(c)));
-    bjState.hands[bjState.activeHand].forEach(c => playerDiv.appendChild(createCardEl(c)));
-
     document.getElementById('blackjackDealerScore').textContent = `Score: ${getHandVal(bjState.dealer)}`;
-    document.getElementById('blackjackPlayerScore').textContent = `Score: ${getHandVal(bjState.hands[bjState.activeHand])}`;
+
+    // --- Render Player (Handles Splits) ---
+    playerDiv.innerHTML = '';
+    
+    // Create a container for all hands
+    const handsContainer = document.createElement('div');
+    handsContainer.className = "flex flex-wrap justify-center gap-8"; // Gap between split hands
+
+    bjState.hands.forEach((hand, index) => {
+        const handWrapper = document.createElement('div');
+        const isActive = index === bjState.activeHand && bjState.status === 'playing';
+        
+        // Visual styling for Active vs Inactive hands
+        handWrapper.className = `flex flex-col items-center p-3 rounded-xl transition-all duration-300 ${
+            isActive ? 'bg-blue-900/40 ring-2 ring-blue-400 scale-105 shadow-lg' : 'opacity-70 grayscale-[0.3]'
+        }`;
+
+        // Score label for this specific hand
+        const scoreLabel = document.createElement('div');
+        scoreLabel.className = "text-xs text-gray-300 mb-2 font-mono";
+        scoreLabel.textContent = `Hand ${index + 1}: ${getHandVal(hand)}`;
+        handWrapper.appendChild(scoreLabel);
+
+        // Cards container
+        const cardsRow = document.createElement('div');
+        cardsRow.className = "flex gap-2";
+        hand.forEach(c => cardsRow.appendChild(createCardEl(c)));
+        handWrapper.appendChild(cardsRow);
+
+        handsContainer.appendChild(handWrapper);
+    });
+
+    playerDiv.appendChild(handsContainer);
+    
+    // Update global score text to show active hand info or "Wait"
+    if (bjState.status === 'playing') {
+        document.getElementById('blackjackPlayerScore').textContent = `Playing Hand ${bjState.activeHand + 1}...`;
+    } else {
+        document.getElementById('blackjackPlayerScore').textContent = "Round Over";
+    }
 }
 
 async function dealBlackjack() {
@@ -382,12 +438,13 @@ async function dealBlackjack() {
     bjState = {
         deck: getDeck(),
         dealer: [],
-        hands: [[]],
+        hands: [[]], // Array of hands (starts with 1)
         bet: bet,
         activeHand: 0,
         status: 'playing'
     };
     
+    // Initial Deal
     bjState.hands[0].push(bjState.deck.pop());
     bjState.dealer.push(bjState.deck.pop());
     bjState.hands[0].push(bjState.deck.pop());
@@ -397,64 +454,162 @@ async function dealBlackjack() {
     document.getElementById('blackjackActionControls').classList.remove('hidden');
     document.getElementById('blackjackResult').textContent = '';
     
+    // Enable split button only if valid
+    checkSplitAvailable();
+    
     renderBJ();
     checkBJTurn();
+}
+
+function checkSplitAvailable() {
+    const splitBtn = document.getElementById('blackjackSplit');
+    const currentHand = bjState.hands[bjState.activeHand];
+    
+    // Can split if: 2 cards, Same Value (e.g. 10 & K, or 8 & 8), and enough balance
+    if (currentHand.length === 2 && 
+        currentHand[0].value === currentHand[1].value && 
+        balance >= bjState.bet) {
+        splitBtn.disabled = false;
+        splitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else {
+        splitBtn.disabled = true;
+        splitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    }
 }
 
 function bjHit() {
     bjState.hands[bjState.activeHand].push(bjState.deck.pop());
     renderBJ();
+    
     if (getHandVal(bjState.hands[bjState.activeHand]) > 21) {
-        endBJRound("Bust!");
+        // If bust, move to next hand immediately
+        handleNextHandOrDealer();
+    } else {
+        // Turn continues, check split button availability again (disable it after hitting)
+        checkSplitAvailable(); 
+        // Actually, you can usually only split on the first 2 cards, so disable it:
+        document.getElementById('blackjackSplit').disabled = true;
+        document.getElementById('blackjackSplit').classList.add('opacity-50', 'cursor-not-allowed');
     }
 }
 
 function bjStand() {
-    bjDealerPlay();
+    handleNextHandOrDealer();
 }
 
 function bjDouble() {
     if (balance < bjState.bet) { showMessage("Not enough balance to double.", 'error'); return; }
+    
     balance -= bjState.bet;
-    bjState.bet *= 2;
     updateBalanceDisplay();
+    
+    // Double current hand's bet tracking? 
+    // For simplicity, we assume uniform bets, but to be accurate we'd need an array of bets.
+    // We will just add the extra win payout at the end.
+    bjState.hands[bjState.activeHand].isDoubled = true;
+
     bjState.hands[bjState.activeHand].push(bjState.deck.pop());
     renderBJ();
-    if (getHandVal(bjState.hands[bjState.activeHand]) > 21) endBJRound("Bust!");
-    else bjDealerPlay();
+    
+    handleNextHandOrDealer();
 }
 
 function bjSplit() {
-    showMessage("Split feature coming soon!", 'success');
+    // 1. Validate
+    const currentHand = bjState.hands[bjState.activeHand];
+    if (currentHand.length !== 2 || currentHand[0].value !== currentHand[1].value) return;
+    if (balance < bjState.bet) { showMessage("Insufficient funds to split.", 'error'); return; }
+
+    // 2. Pay for split
+    balance -= bjState.bet;
+    updateBalanceDisplay();
+
+    // 3. Create new hand
+    const cardToMove = currentHand.pop();
+    const newHand = [cardToMove];
+    
+    // Add to state
+    bjState.hands.push(newHand);
+
+    // 4. Deal 1 card to BOTH hands immediately
+    currentHand.push(bjState.deck.pop());
+    newHand.push(bjState.deck.pop());
+
+    // 5. Update UI
+    renderBJ();
+    checkSplitAvailable(); // Check if the FIRST hand can be split again (optional, usually max 3 splits)
+}
+
+function handleNextHandOrDealer() {
+    // Check if there are more hands to play
+    if (bjState.activeHand < bjState.hands.length - 1) {
+        bjState.activeHand++;
+        renderBJ();
+        checkSplitAvailable(); // Check if the NEW hand can be split
+    } else {
+        // All hands played, dealer's turn
+        bjDealerPlay();
+    }
 }
 
 async function bjDealerPlay() {
+    bjState.status = 'finished';
     bjState.dealer[1].hidden = false;
     renderBJ();
     
+    // Dealer hits on soft 17 logic or just < 17
     while (getHandVal(bjState.dealer) < 17) {
-        await new Promise(r => setTimeout(r, 500));
+        await new Promise(r => setTimeout(r, 600));
         bjState.dealer.push(bjState.deck.pop());
         renderBJ();
     }
     
-    const pVal = getHandVal(bjState.hands[bjState.activeHand]);
-    const dVal = getHandVal(bjState.dealer);
-    
-    if (dVal > 21 || pVal > dVal) {
-        balance += bjState.bet * 2;
-        endBJRound("You Win!");
-    } else if (pVal === dVal) {
-        balance += bjState.bet;
-        endBJRound("Push");
-    } else {
-        endBJRound("Dealer Wins");
-    }
-    updateBalanceDisplay();
+    calculateWinnings();
 }
 
-function endBJRound(msg) {
-    document.getElementById('blackjackResult').textContent = msg;
+function calculateWinnings() {
+    const dVal = getHandVal(bjState.dealer);
+    let totalWin = 0;
+    let resultMsg = [];
+
+    bjState.hands.forEach((hand, index) => {
+        const pVal = getHandVal(hand);
+        let currentBet = bjState.bet;
+        if (hand.isDoubled) currentBet *= 2;
+
+        let outcome = "";
+
+        if (pVal > 21) {
+            outcome = "Bust";
+        } else if (dVal > 21 || pVal > dVal) {
+            totalWin += currentBet * 2; // Return bet + profit
+            outcome = "Win";
+        } else if (pVal === dVal) {
+            totalWin += currentBet; // Return bet
+            outcome = "Push";
+        } else {
+            outcome = "Lose";
+        }
+        resultMsg.push(`Hand ${index + 1}: ${outcome}`);
+    });
+
+    if (totalWin > 0) {
+        balance += totalWin;
+        updateBalanceDisplay();
+    }
+
+    // Determine final message color based on net result
+    const resultEl = document.getElementById('blackjackResult');
+    resultEl.innerHTML = resultMsg.join(' | ');
+    
+    if (totalWin > (bjState.bet * bjState.hands.length)) {
+        resultEl.className = "text-center text-2xl font-bold my-4 h-8 text-green-400";
+    } else if (totalWin === 0) {
+        resultEl.className = "text-center text-2xl font-bold my-4 h-8 text-red-500";
+    } else {
+        resultEl.className = "text-center text-2xl font-bold my-4 h-8 text-gray-300";
+    }
+
     document.getElementById('blackjackBetControls').classList.remove('hidden');
     document.getElementById('blackjackActionControls').classList.add('hidden');
 }
@@ -462,7 +617,7 @@ function endBJRound(msg) {
 function checkBJTurn() {
     const pVal = getHandVal(bjState.hands[bjState.activeHand]);
     if (pVal === 21) {
-        bjDealerPlay();
+        handleNextHandOrDealer();
     }
 }
 
@@ -797,7 +952,7 @@ function cashoutMines() {
     updateBalanceDisplay();
     showMessage(`Cashed out $${winnings.toFixed(2)}!`, 'success');
     
-    endMinesGame(true); // true = win (by cashing out)
+    endMimesGame(true); // true = win (by cashing out)
 }
 
 function endMinesGame(didWin) {
