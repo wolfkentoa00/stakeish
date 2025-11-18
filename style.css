@@ -160,7 +160,7 @@ a { text-decoration: none; color: inherit; }
     animation: spinY 0.1s infinite linear;
 }
 
-/* --- BLACKJACK FIX --- */
+/* --- BLACKJACK --- */
 .hand-wrapper {
     display: flex;
     flex-direction: column;
@@ -180,7 +180,7 @@ a { text-decoration: none; color: inherit; }
     justify-content: center;
     align-items: center;
     min-height: 110px;
-    gap: 5px; /* Use Gap instead of negative margin */
+    gap: 5px;
 }
 .card {
     background-color: white;
@@ -198,14 +198,14 @@ a { text-decoration: none; color: inherit; }
     animation: slideUp 0.3s ease-out backwards;
     font-size: 1.1rem;
     user-select: none;
-    margin: 0; /* Reset margin */
+    margin: 0;
     transition: transform 0.2s;
 }
 .card:hover { transform: translateY(-5px); }
 .card.red { color: #dc2626; }
 .card.black { color: #1f2937; }
 
-/* --- DICE FIX --- */
+/* --- DICE --- */
 .dice-container {
     position: relative;
     height: 60px;
@@ -217,16 +217,15 @@ a { text-decoration: none; color: inherit; }
 }
 .dice-track {
     position: absolute;
-    top: 0; left: 0; w: 100%; h: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
 }
 .dice-win-bar {
     height: 100%;
     background-color: #00e701;
     position: absolute;
     top: 0;
-    left: 0;
-    border-radius: 30px 0 0 30px;
     pointer-events: none;
+    transition: all 0.1s linear;
 }
 #diceHandle {
     position: absolute;
@@ -268,7 +267,7 @@ a { text-decoration: none; color: inherit; }
     margin: 0;
 }
 
-/* --- PLINKO FIX --- */
+/* --- PLINKO --- */
 .plinko-bucket {
     border-radius: 4px;
     font-weight: bold;
@@ -299,6 +298,13 @@ a { text-decoration: none; color: inherit; }
     align-items: center;
     justify-content: center;
     position: relative;
+    transition: transform 0.3s;
+}
+.case-item.winning-item {
+    transform: scale(1.1);
+    z-index: 10;
+    border-color: white !important;
+    box-shadow: 0 0 20px rgba(255,255,255,0.3);
 }
 .case-item img { width: 60px; height: 60px; object-fit: contain; }
 .case-item .val { font-weight: bold; color: white; margin-top: 4px; text-shadow: 0 1px 2px black; }
