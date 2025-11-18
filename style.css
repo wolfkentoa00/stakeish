@@ -20,36 +20,33 @@ a { text-decoration: none; color: inherit; }
     0% { transform: translateY(20px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
 }
-@keyframes flashGreen {
-    0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
-    70% { box-shadow: 0 0 0 10px rgba(34, 197, 94, 0); }
-    100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-}
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+@keyframes flashText {
+    0% { color: #9ca3af; }
+    50% { color: white; }
+    100% { color: #9ca3af; }
 }
 
-/* --- MANUAL LAYOUT ENGINE --- */
+/* --- LAYOUT ENGINE --- */
 .flex { display: flex; }
 .flex-col { flex-direction: column; }
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .justify-center { justify-content: center; }
+.flex-wrap { flex-wrap: wrap; }
 .gap-2 { gap: 0.5rem; }
 .gap-4 { gap: 1rem; }
+.gap-8 { gap: 2rem; }
 .grid { display: grid; }
 .grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
 .grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
 .w-full { width: 100%; }
+.h-fit { height: fit-content; }
 .relative { position: relative; }
 .absolute { position: absolute; }
+.inset-0 { top: 0; right: 0; bottom: 0; left: 0; }
 .hidden { display: none !important; }
 
-/* --- COMPONENT STYLES --- */
-
-/* Navigation */
+/* --- COMPONENTS --- */
 .nav-item {
     border-left: 3px solid transparent;
     padding: 12px 16px;
@@ -66,14 +63,8 @@ a { text-decoration: none; color: inherit; }
     transition: all 0.2s;
 }
 .nav-item:hover { background-color: #2c4051; color: white; }
-.nav-item.active {
-    background-color: #2c4051;
-    border-left: 3px solid #00aaff;
-    color: white;
-    text-shadow: 0 0 10px rgba(0, 170, 255, 0.5);
-}
+.nav-item.active { background-color: #2c4051; border-left: 3px solid #00aaff; color: white; }
 
-/* Buttons & Inputs */
 .btn-bet {
     background-color: #00e701;
     color: #0f212e;
@@ -112,11 +103,9 @@ a { text-decoration: none; color: inherit; }
     font-size: 1rem;
     transition: border-color 0.2s;
 }
-.game-input:focus { outline: none; border-color: #00aaff; box-shadow: 0 0 0 2px rgba(0,170,255,0.2); }
+.game-input:focus { outline: none; border-color: #00aaff; }
 
-/* --- GAME SPECIFIC STYLES --- */
-
-/* Mines - Fixed Aspect Ratio & Shapes */
+/* --- MINES --- */
 #minesGrid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -127,25 +116,31 @@ a { text-decoration: none; color: inherit; }
 }
 .mines-tile {
     background-color: #3a5063;
-    border-radius: 8px;
+    border-radius: 12px;
     border: none;
     cursor: pointer;
-    aspect-ratio: 1 / 1; /* Forces square shape */
+    aspect-ratio: 1 / 1;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 2rem;
-    transition: transform 0.1s, background-color 0.2s;
+    transition: all 0.2s;
     box-shadow: 0 4px 0 #213743;
 }
 .mines-tile:active { transform: translateY(4px); box-shadow: none; }
-.mines-tile:hover:not(:disabled) { background-color: #4a657c; }
+.mines-tile:hover:not(:disabled) { background-color: #4a657c; transform: translateY(-2px); }
 .mines-tile.gem { background-color: #0f212e; border: 2px solid #00e701; box-shadow: inset 0 0 15px rgba(0, 231, 1, 0.2); }
-.mines-tile.gem i { animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); color: #00e701; filter: drop-shadow(0 0 5px #00e701); }
+.mines-tile.gem i { animation: popIn 0.4s; color: #00e701; filter: drop-shadow(0 0 5px #00e701); }
 .mines-tile.mine { background-color: #0f212e; border: 2px solid #ef4444; box-shadow: inset 0 0 15px rgba(239, 68, 68, 0.2); }
 .mines-tile.mine i { animation: popIn 0.4s; color: #ef4444; filter: drop-shadow(0 0 5px #ef4444); }
 
-/* Slots - Smoother Look */
+/* Revealed States (Post-Game) */
+.mines-tile.revealed-safe { background-color: #1a2c38; opacity: 0.6; border: 1px solid #00e701; }
+.mines-tile.revealed-safe i { color: #00e701; font-size: 1.5rem; }
+.mines-tile.revealed-mine { background-color: #1a2c38; opacity: 0.6; border: 1px solid #ef4444; }
+.mines-tile.revealed-mine i { color: #ef4444; font-size: 1.5rem; }
+
+/* --- SLOTS --- */
 .reel {
     background-color: #0f212e;
     border: 2px solid #2c4051;
@@ -170,14 +165,26 @@ a { text-decoration: none; color: inherit; }
     animation: spinY 0.1s infinite linear;
 }
 
-/* Blackjack - Horizontal Cards */
-#blackjackDealerHand, #blackjackPlayerHand {
+/* --- BLACKJACK --- */
+.hand-wrapper {
     display: flex;
-    flex-direction: row; /* Force row */
+    flex-direction: column;
+    align-items: center;
+    min-width: 150px;
+    margin: 0 10px;
+}
+.hand-active {
+    border: 2px dashed #00aaff;
+    border-radius: 12px;
+    padding: 10px;
+    background: rgba(0, 170, 255, 0.05);
+}
+.hand-cards {
+    display: flex;
+    flex-direction: row;
     justify-content: center;
-    gap: 10px; /* Spacing between cards */
-    min-height: 120px;
     perspective: 1000px;
+    min-height: 110px;
 }
 .card {
     background-color: white;
@@ -191,26 +198,20 @@ a { text-decoration: none; color: inherit; }
     padding: 5px;
     font-weight: 700;
     font-family: monospace;
-    box-shadow: -2px 2px 10px rgba(0,0,0,0.5);
-    animation: slideUp 0.4s ease-out backwards;
+    box-shadow: -2px 2px 6px rgba(0,0,0,0.4);
+    animation: slideUp 0.3s ease-out backwards;
     position: relative;
     font-size: 1.2rem;
     user-select: none;
+    margin-right: -45px; /* Negative margin for overlap */
+    transition: margin 0.2s, transform 0.2s;
 }
+.card:last-child { margin-right: 0; }
+.card:hover { margin-right: -20px; z-index: 10; transform: translateY(-10px); }
 .card.red { color: #dc2626; }
 .card.black { color: #1f2937; }
-.score-bubble {
-    background-color: #0f212e;
-    border: 1px solid #3a5063;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.875rem;
-    color: #9ca3af;
-    margin-bottom: 8px;
-    display: inline-block;
-}
 
-/* Dice - Redesigned Slider */
+/* --- DICE --- */
 .dice-container {
     position: relative;
     height: 60px;
@@ -220,30 +221,14 @@ a { text-decoration: none; color: inherit; }
     overflow: hidden;
     cursor: pointer;
 }
-.dice-track {
-    position: absolute;
-    top: 0; left: 0; bottom: 0; right: 0;
-    border-radius: 30px;
-    overflow: hidden;
-}
 .dice-win-bar {
     height: 100%;
-    background-color: #00e701; /* Green Win Zone */
+    background-color: #00e701;
     position: absolute;
     left: 0;
     top: 0;
-    transition: width 0.1s linear;
+    transition: width 0.05s linear, left 0.05s linear; /* Faster transition */
 }
-/* The input range is invisible but sits on top to capture clicks/drags */
-#diceSlider {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    opacity: 0;
-    cursor: pointer;
-    z-index: 10;
-}
-/* The visible handle */
 #diceHandle {
     position: absolute;
     top: 2px;
@@ -253,31 +238,24 @@ a { text-decoration: none; color: inherit; }
     border-radius: 50%;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
     z-index: 5;
-    pointer-events: none; /* Let clicks pass to input */
+    pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #0f212e;
     font-weight: bold;
-    transition: left 0.1s linear;
+    transition: left 0.05s linear; /* Faster transition */
 }
-#diceResultMarker {
+#diceSlider {
     position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 0; 
-    height: 0; 
-    border-left: 10px solid transparent;
-    border-right: 10px solid transparent;
-    border-top: 15px solid white;
-    z-index: 20;
-    transition: left 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5));
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 10;
 }
-#diceResultMarker.win { border-top-color: #00e701; }
-#diceResultMarker.loss { border-top-color: #ef4444; }
 
-/* Plinko */
+/* --- PLINKO --- */
 .plinko-bucket {
     border-radius: 4px;
     font-weight: bold;
@@ -291,10 +269,10 @@ a { text-decoration: none; color: inherit; }
 .plinko-bucket.hit {
     transform: translateY(5px) scale(0.95);
     filter: brightness(1.5);
-    box-shadow: 0 0 15px currentColor;
+    box-shadow: 0 0 20px currentColor;
 }
 
-/* Floating Graph */
+/* --- FLOATING GRAPH --- */
 #floatingGraph {
     background-color: rgba(15, 33, 46, 0.95);
     backdrop-filter: blur(10px);
@@ -302,6 +280,10 @@ a { text-decoration: none; color: inherit; }
     box-shadow: 0 10px 25px rgba(0,0,0,0.5);
 }
 
-/* Text Helpers */
-.text-stake-green { color: #00e701; text-shadow: 0 0 10px rgba(0, 231, 1, 0.4); }
-.text-stake-red { color: #ef4444; text-shadow: 0 0 10px rgba(239, 68, 68, 0.4); }
+/* --- TEXT HELPERS --- */
+.text-stake-green { color: #00e701; text-shadow: 0 0 15px rgba(0, 231, 1, 0.4); }
+.text-stake-red { color: #ef4444; text-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+.score-bubble {
+    background: #1f2937; border: 1px solid #3a5063; color: #9ca3af;
+    padding: 2px 8px; border-radius: 10px; font-size: 0.8rem; margin-bottom: 5px;
+}
