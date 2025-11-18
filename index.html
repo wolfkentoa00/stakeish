@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stakeish.com</title>
-    <!-- Using Tailwind CSS for styling -->
+    <!-- Using Tailwind CSS for styling (CDN may fail, style.css has fallbacks) -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Using Inter font -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&display=swap">
@@ -36,7 +36,7 @@
                     <div class="bg-[#2c4051] text-white font-bold py-2 px-4 rounded-lg shadow-lg border border-[#3a5063] flex items-center gap-2">
                         <span class="text-[#00aaff]">$</span>
                         <span id="balanceDisplay">1000.00</span>
-                        <button id="walletButton" class="ml-2 text-xs bg-[#00aaff] px-2 py-1 rounded hover:bg-[#0088cc]">Wallet</button>
+                        <button id="walletButton" class="ml-2 text-xs bg-[#00aaff] px-2 py-1 rounded hover:bg-[#0088cc] text-white font-bold border-none cursor-pointer">Wallet</button>
                     </div>
                 </div>
             </div>
@@ -50,42 +50,42 @@
         <nav class="w-full lg:w-1/5 2xl:w-1/6 bg-[#1a2c38] rounded-lg shadow-lg p-4 h-max lg:sticky lg:top-24 z-30">
             <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-2">
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="crash">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="crash">
                         <i class="fas fa-rocket w-5 text-center text-red-500"></i> Crash
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="plinko">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="plinko">
                         <i class="fas fa-bowling-ball w-5 text-center text-pink-500"></i> Plinko
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="dice">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="dice">
                         <i class="fas fa-dice w-5 text-center text-blue-500"></i> Dice
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="mines">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="mines">
                         <i class="fas fa-bomb w-5 text-center text-yellow-500"></i> Mines
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="limbo">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="limbo">
                         <i class="fas fa-gavel w-5 text-center text-purple-500"></i> Limbo
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="blackjack">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="blackjack">
                         <i class="fas fa-id-card w-5 text-center text-gray-400"></i> Blackjack
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="slots">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="slots">
                         <i class="fas fa-dice-d6 w-5 text-center text-orange-500"></i> Slots
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="scratch">
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3 bg-transparent border-none cursor-pointer text-white" data-game="scratch">
                         <i class="fas fa-coins w-5 text-center text-green-500"></i> Scratch
                     </button>
                 </li>
@@ -109,8 +109,8 @@
                 <i class="fas fa-chart-line text-[#00aaff]"></i> Live Stats
             </div>
             <div class="flex gap-2">
-                <button id="clearGraphBtn" class="text-xs bg-red-900/50 hover:bg-red-900 text-red-200 px-2 py-1 rounded transition-colors">Clear</button>
-                <button id="hideGraphBtn" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+                <button id="clearGraphBtn" class="text-xs bg-red-900/50 hover:bg-red-900 text-red-200 px-2 py-1 rounded transition-colors border-none cursor-pointer">Clear</button>
+                <button id="hideGraphBtn" class="text-gray-400 hover:text-white bg-transparent border-none cursor-pointer"><i class="fas fa-times"></i></button>
             </div>
         </div>
         
@@ -133,11 +133,11 @@
     </div>
 
     <!-- Deposit Modal -->
-    <div id="depositModal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop backdrop-blur-sm">
+    <div id="depositModal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop backdrop-blur-sm bg-black/70">
         <div class="bg-[#1a2c38] rounded-xl shadow-2xl p-8 w-full max-w-md mx-4 border border-[#3a5063]">
             <div class="flex justify-between items-center mb-6">
                 <h2 class="text-2xl font-bold text-white">Add Funds</h2>
-                <button id="closeModal" class="text-gray-400 hover:text-white text-2xl transition-colors">&times;</button>
+                <button id="closeModal" class="text-gray-400 hover:text-white text-2xl transition-colors bg-transparent border-none cursor-pointer">&times;</button>
             </div>
             <div>
                 <p class="text-gray-400 text-sm mb-4">This is a simulation. No real money is involved.</p>
