@@ -1,169 +1,153 @@
 body {
     font-family: 'Inter', sans-serif;
-    /* Using a dark gradient similar to Stake */
     background-color: #0f212e;
-    background-image: linear-gradient(to bottom right, #0f212e, #1a2c38);
+    background-image: radial-gradient(circle at top center, #1a2c38 0%, #0f212e 70%);
     color: #e5e7eb;
 }
-/* Custom scrollbar */
-::-webkit-scrollbar {
-    width: 8px;
+
+/* --- Nav & Layout --- */
+.nav-item {
+    border-left: 3px solid transparent;
 }
-::-webkit-scrollbar-track {
-    background: #1a2c38;
-}
-::-webkit-scrollbar-thumb {
-    background: #3a5063;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #4a657c;
-}
-/* Active nav item */
 .nav-item.active {
     background-color: #2c4051;
     border-left: 3px solid #00aaff;
     color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
-.nav-item {
-    border-left: 3px solid transparent;
+
+/* --- Common Game Elements --- */
+.game-container {
+    border: 1px solid #2c4051;
 }
-/* Custom styles for game controls */
+
 .game-input {
-    background-color: #1a2c38;
-    border: 1px solid #3a5063;
-    color: #e5e7eb;
+    background-color: #0f212e;
+    border: 2px solid #2c4051;
+    color: #fff;
     border-radius: 8px;
+    transition: border-color 0.2s;
 }
 .game-input:focus {
     outline: none;
     border-color: #00aaff;
-    box-shadow: 0 0 0 2px rgba(0, 170, 255, 0.5);
 }
-/* Main game button style */
-.btn-bet {
-    background-color: #00aaff;
-    color: #ffffff;
-    font-weight: 700;
-    transition: all 0.2s ease;
-}
-.btn-bet:hover {
-    background-color: #0095e0;
-}
-.btn-bet:disabled {
-    background-color: #3a5063;
-    color: #7d8f9e;
+.game-input:disabled {
+    opacity: 0.5;
     cursor: not-allowed;
-    background-image: none;
-}
-/* Modal background */
-.modal-backdrop {
-    background-color: rgba(0, 0, 0, 0.7);
 }
 
-/* Slots styles */
-.reel {
-    width: 80px;
-    height: 80px;
+.btn-bet {
+    background-color: #00e701; /* Stake green-ish */
+    color: #0f212e;
+    font-weight: 800;
+    transition: all 0.2s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.btn-bet:hover:not(:disabled) {
+    background-color: #00ff01;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 231, 1, 0.3);
+}
+.btn-bet:disabled {
+    background-color: #2c4051;
+    color: #6b7280;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.btn-bet-mod {
+    background-color: #2c4051;
+    color: #9ca3af;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+.btn-bet-mod:hover:not(:disabled) {
+    background-color: #3a5063;
+    color: white;
+    border-color: #4b5563;
+}
+.btn-bet-mod:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* --- Floating Graph --- */
+#floatingGraph {
+    backdrop-filter: blur(10px);
+}
+#graphHeader:active {
+    cursor: grabbing;
+}
+
+/* --- Plinko --- */
+.plinko-bucket {
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.7rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    overflow: hidden;
-    background-color: #1a2c38;
-    border-radius: 8px;
-    box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-    font-size: 3rem; /* 48px */
-    line-height: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+    transition: transform 0.1s;
+}
+.plinko-bucket.hit {
+    transform: translateY(4px) scale(0.95);
+    filter: brightness(1.2);
 }
 
-.spinning {
-    /* Simple visual feedback for spinning */
-    animation: spinY 0.1s linear infinite;
+/* --- Dice Slider --- */
+#diceSlider {
+    -webkit-appearance: none;
+    appearance: none;
+}
+#diceSlider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    background: white;
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    border: 4px solid #00aaff;
+    margin-top: -8px; /* Align center with track */
+    transition: transform 0.1s;
+}
+#diceSlider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+#diceSlider::-webkit-slider-runnable-track {
+    height: 8px;
+    border-radius: 4px;
+    background: transparent; /* We use a custom background div */
 }
 
-@keyframes spinY {
-    from { transform: translateY(-10px) rotateX(10deg); opacity: 0.7; }
-    to { transform: translateY(10px) rotateX(-10deg); opacity: 0.7; }
+/* --- Scrollbar --- */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+::-webkit-scrollbar-track {
+    background: #0f212e;
+}
+::-webkit-scrollbar-thumb {
+    background: #2c4051;
+    border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #3a5063;
 }
 
-/* Secondary bet button style */
-.btn-bet-mod {
-    background-color: #2c4051;
-    color: #e5e7eb;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    border: 1px solid #3a5063;
+/* --- Animations --- */
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
-.btn-bet-mod:hover {
-    background-color: #3a5063;
-}
-.btn-bet-mod:disabled {
-    background-color: #2c4051;
-    color: #7d8f9e;
-    cursor: not-allowed;
-}
-
-
-/* Blackjack Card Styles */
-/* This is a simplified card element */
-.card {
-    background-color: #ffffff;
-    border-radius: 8px;
-    font-weight: 700;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    position: relative;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    border: 1px solid #e5e7eb;
-}
-
-/* Blackjack Table */
-.hand-container {
-    display: flex;
-    gap: 8px;
-    min-height: 110px;
-    align-items: center;
-}
-
-/* Scratch Off Canvas */
-#scratchCanvas {
-    background-color: transparent; /* Canvas itself is clear */
-    border-radius: 8px;
-    cursor: grabbing; /* Show a "grab" cursor */
-    /* Ensure it's hidden when not in use */
-    visibility: hidden; 
-}
-
-/* Mines Game Styles */
-.mines-tile {
-    width: 100%;
-    aspect-ratio: 1 / 1;
-    background-color: #3a5063;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    font-size: 1.5rem;
-    color: white;
-}
-.mines-tile:not(:disabled):hover {
-    background-color: #4a657c;
-}
-.mines-tile:disabled {
-    cursor: not-allowed;
-    opacity: 0.9;
-}
-.mines-tile.gem {
-    background-color: #059669; /* green-700 */
-    color: #ffffff;
-}
-.mines-tile.mine {
-    background-color: #dc2626; /* red-600 */
-    color: #ffffff;
-}
-
-/* NEW: Crash Game Display Text */
-#crashGameDisplay {
-    /* This allows the text to overlay the canvas */
-    z-index: 10;
+.message-show {
+    transform: translateY(0) !important;
+    opacity: 1 !important;
 }
