@@ -2,34 +2,27 @@
     <h1 class="text-3xl font-bold mb-6 text-white">Scratch Off</h1>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
         
-        <!-- Game Controls -->
         <div class="md:col-span-1 bg-[#2c4051] rounded-lg p-6 flex flex-col gap-4">
             <div>
-                <label for="scratchBetAmount" class="block text-sm font-medium text-gray-300 mb-1">Ticket Price</label>
-                <input type="number" id="scratchBetAmount" class="game-input w-full p-2" value="5">
+                <label class="block text-sm font-medium text-gray-300 mb-1">Ticket Price</label>
+                <input type="number" id="scratchBetAmount" class="game-input" value="10">
                 <div class="grid grid-cols-3 gap-2 mt-2">
-                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('scratchBetAmount', 0.5)">/2</button>
-                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('scratchBetAmount', 2)">x2</button>
-                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('scratchBetAmount', 'max')">Max</button>
+                    <button class="btn-bet-mod" onclick="modifyBet('scratchBetAmount', 0.5)">/2</button>
+                    <button class="btn-bet-mod" onclick="modifyBet('scratchBetAmount', 2)">x2</button>
+                    <button class="btn-bet-mod" onclick="modifyBet('scratchBetAmount', 'max')">Max</button>
                 </div>
             </div>
-            <button id="buyScratchButton" class="btn-bet w-full py-3 rounded-lg text-lg">
-                Buy Ticket
-            </button>
+            <button id="buyScratchButton" class="btn-bet w-full py-3">Buy Ticket</button>
         </div>
 
-        <!-- Scratch Card -->
-        <div class="md:col-span-2 bg-[#2c4051] rounded-lg p-6 flex items-center justify-center min-h-[200px] relative">
-            <!-- Instructions are now shown *over* the canvas container -->
-            <div id="scratchInstructions" class="absolute text-center text-gray-400 z-10">Buy a ticket to play!</div>
-            
-            <!-- The canvas is where all drawing happens. 
-                 It's set to be responsive using w-full and h-auto, 
-                 but with fixed internal resolution (width/height attributes) 
-                 for consistent drawing logic. -->
-            <canvas id="scratchCanvas" width="400" height="200" class="rounded-lg w-full h-auto max-w-md"></canvas>
+        <div class="md:col-span-2 bg-[#2c4051] rounded-lg p-6 flex items-center justify-center min-h-[300px] relative select-none">
+            <!-- The prize text sits BEHIND the canvas -->
+            <div id="scratchContainer" class="relative w-full max-w-md aspect-[2/1] bg-white rounded-lg overflow-hidden shadow-lg border-4 border-[#3a5063]">
+                <div id="scratchPrizeText" class="absolute inset-0 flex items-center justify-center text-4xl font-black text-gray-800 z-0">
+                    ???
+                </div>
+                <canvas id="scratchCanvas" class="absolute inset-0 w-full h-full z-10 cursor-crosshair"></canvas>
+            </div>
         </div>
     </div>
-    <!-- Win/Loss Message Area -->
-    <div id="scratchResult" class="text-center mt-6 text-2xl font-bold">&nbsp;</div>
 </div>
