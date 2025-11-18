@@ -1,89 +1,180 @@
-body {
-    font-family: 'Inter', sans-serif;
-    background-color: #0f212e;
-    background-image: radial-gradient(circle at top center, #1a2c38 0%, #0f212e 70%);
-    color: #e5e7eb;
+/* --- RESET & CORE --- */
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; padding: 0; font-family: 'Inter', sans-serif; background-color: #0f212e; color: #e5e7eb; }
+ul { list-style: none; padding: 0; margin: 0; }
+button, input, select { font-family: inherit; }
+a { text-decoration: none; color: inherit; }
+
+/* --- ANIMATIONS --- */
+@keyframes spinY {
+    0% { transform: translateY(0); filter: blur(0); }
+    50% { transform: translateY(-10px) scale(0.95); filter: blur(2px); }
+    100% { transform: translateY(0); filter: blur(0); }
+}
+@keyframes popIn {
+    0% { transform: scale(0.8); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+@keyframes slideUp {
+    0% { transform: translateY(20px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
 }
 
-/* --- Nav & Layout --- */
+/* --- MANUAL LAYOUT ENGINE (Tailwind Polyfill) --- */
+.flex { display: flex; }
+.flex-col { flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.justify-center { justify-content: center; }
+.gap-2 { gap: 0.5rem; }
+.gap-4 { gap: 1rem; }
+.grid { display: grid; }
+.grid-cols-1 { grid-template-columns: repeat(1, 1fr); }
+.grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+
+/* --- RESPONSIVE --- */
+@media (min-width: 768px) {
+    .md\:grid-cols-2 { grid-template-columns: repeat(2, 1fr); }
+    .md\:grid-cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .md\:col-span-1 { grid-column: span 1; }
+    .md\:col-span-2 { grid-column: span 2; }
+}
+@media (min-width: 1024px) {
+    .lg\:w-1\/5 { width: 20%; }
+    .lg\:w-4\/5 { width: 80%; }
+    .lg\:flex-row { flex-direction: row; }
+}
+
+/* --- COMPONENT STYLES --- */
+
+/* Navigation */
 .nav-item {
     border-left: 3px solid transparent;
+    padding: 12px 16px;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
 }
+.nav-item:hover { background-color: #2c4051; color: white; }
 .nav-item.active {
     background-color: #2c4051;
     border-left: 3px solid #00aaff;
-    color: #ffffff;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    color: white;
 }
 
-/* --- Common Game Elements --- */
-.game-container {
-    border: 1px solid #2c4051;
-}
-
-.game-input {
-    background-color: #0f212e;
-    border: 2px solid #2c4051;
-    color: #fff;
-    border-radius: 8px;
-    transition: border-color 0.2s;
-}
-.game-input:focus {
-    outline: none;
-    border-color: #00aaff;
-}
-.game-input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
+/* Buttons & Inputs */
 .btn-bet {
-    background-color: #00e701; /* Stake green-ish */
+    background-color: #00e701;
     color: #0f212e;
     font-weight: 800;
-    transition: all 0.2s ease;
+    padding: 12px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    width: 100%;
+    transition: transform 0.1s, box-shadow 0.1s;
 }
-.btn-bet:hover:not(:disabled) {
-    background-color: #00ff01;
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 231, 1, 0.3);
-}
-.btn-bet:disabled {
-    background-color: #2c4051;
-    color: #6b7280;
-    cursor: not-allowed;
-    box-shadow: none;
-    transform: none;
-}
+.btn-bet:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 231, 1, 0.4); }
+.btn-bet:disabled { background-color: #2c4051; color: #6b7280; cursor: not-allowed; transform: none; }
 
 .btn-bet-mod {
     background-color: #2c4051;
-    color: #9ca3af;
-    font-weight: 600;
-    transition: all 0.2s;
-    border: 1px solid transparent;
+    color: #e5e7eb;
+    border: 1px solid #3a5063;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
 }
-.btn-bet-mod:hover:not(:disabled) {
-    background-color: #3a5063;
+.btn-bet-mod:hover { background-color: #3a5063; }
+
+.game-input {
+    background: #0f212e;
+    border: 2px solid #2c4051;
     color: white;
-    border-color: #4b5563;
+    padding: 10px;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 1rem;
 }
-.btn-bet-mod:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+.game-input:focus { outline: none; border-color: #00aaff; }
+
+/* --- GAME SPECIFIC STYLES --- */
+
+/* Mines */
+#minesGrid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    width: 100%;
+    max-width: 400px;
+    aspect-ratio: 1/1;
+    margin: 0 auto;
+}
+.mines-tile {
+    background-color: #2c4051;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.1s, background-color 0.2s;
+    font-size: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%; 
+    width: 100%;
+}
+.mines-tile:hover:not(:disabled) { background-color: #3a5063; transform: scale(1.05); }
+.mines-tile.gem { background-color: #10b981; color: white; animation: popIn 0.3s; }
+.mines-tile.mine { background-color: #ef4444; color: white; animation: popIn 0.3s; }
+
+/* Slots */
+.reel {
+    background-color: #0f212e;
+    border: 2px solid #3a5063;
+    border-radius: 8px;
+    height: 100px;
+    width: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.5);
+}
+.reel.spinning {
+    animation: spinY 0.1s infinite linear;
+    opacity: 0.7;
 }
 
-/* --- Floating Graph --- */
-#floatingGraph {
-    backdrop-filter: blur(10px);
+/* Blackjack Cards */
+.card {
+    background-color: white;
+    border-radius: 6px;
+    width: 60px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+    font-weight: bold;
+    font-family: monospace;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+    animation: slideUp 0.3s ease-out;
+    font-size: 1.2rem;
 }
-#graphHeader:active {
-    cursor: grabbing;
-}
+.card.red { color: #dc2626; }
+.card.black { color: #1f2937; }
 
-/* --- Plinko --- */
+/* Plinko */
 .plinko-bucket {
     border-radius: 4px;
     font-weight: bold;
@@ -95,59 +186,26 @@ body {
     transition: transform 0.1s;
 }
 .plinko-bucket.hit {
-    transform: translateY(4px) scale(0.95);
-    filter: brightness(1.2);
+    transform: translateY(5px);
+    filter: brightness(1.5);
 }
 
-/* --- Dice Slider --- */
-#diceSlider {
-    -webkit-appearance: none;
-    appearance: none;
-}
-#diceSlider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 24px;
-    height: 24px;
-    background: white;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 0 10px rgba(255,255,255,0.5);
-    border: 4px solid #00aaff;
-    margin-top: -8px; /* Align center with track */
-    transition: transform 0.1s;
-}
-#diceSlider::-webkit-slider-thumb:hover {
-    transform: scale(1.2);
-}
-#diceSlider::-webkit-slider-runnable-track {
-    height: 8px;
-    border-radius: 4px;
-    background: transparent; /* We use a custom background div */
+/* Floating Graph */
+#floatingGraph {
+    background-color: rgba(26, 44, 56, 0.95);
+    backdrop-filter: blur(8px);
+    border: 1px solid #3a5063;
 }
 
-/* --- Scrollbar --- */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-::-webkit-scrollbar-track {
-    background: #0f212e;
-}
-::-webkit-scrollbar-thumb {
-    background: #2c4051;
-    border-radius: 4px;
-}
-::-webkit-scrollbar-thumb:hover {
-    background: #3a5063;
-}
-
-/* --- Animations --- */
-@keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-}
-.message-show {
-    transform: translateY(0) !important;
-    opacity: 1 !important;
-}
+/* Helper Classes */
+.hidden { display: none !important; }
+.text-green-500 { color: #22c55e; }
+.text-red-500 { color: #ef4444; }
+.text-white { color: white; }
+.font-bold { font-weight: bold; }
+.text-center { text-align: center; }
+.text-2xl { font-size: 1.5rem; }
+.w-full { width: 100%; }
+.p-6 { padding: 1.5rem; }
+.bg-\[\#2c4051\] { background-color: #2c4051; }
+.rounded-lg { border-radius: 0.5rem; }
