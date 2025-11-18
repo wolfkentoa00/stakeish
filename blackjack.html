@@ -3,6 +3,7 @@
     
     <!-- Game Table -->
     <div class="bg-[#2c4051] rounded-lg p-6 min-h-[450px] flex flex-col justify-between relative border-2 border-[#3a5063]">
+        <!-- Dealer Area -->
         <div class="text-center">
             <div class="flex justify-center items-center gap-2 mb-2">
                 <h2 class="text-xl font-bold text-gray-300">Dealer</h2>
@@ -28,18 +29,26 @@
 
     <!-- Controls -->
     <div class="bg-[#2c4051] rounded-lg p-4 mt-4">
-        <div id="blackjackBetControls" class="flex flex-col sm:flex-row items-center gap-4">
-            <div class="flex-1 w-full">
-                <input type="number" id="blackjackBetAmount" class="game-input" value="10">
+        <div class="flex flex-col sm:flex-row items-center gap-4">
+            
+            <!-- Bet Input (Always Visible) -->
+            <div class="flex-1 w-full sm:max-w-xs">
+                <label class="text-xs text-gray-400 font-bold uppercase ml-1">Bet Amount</label>
+                <input type="number" id="blackjackBetAmount" class="game-input mt-1" value="10">
             </div>
-            <button id="blackjackDealButton" class="btn-bet py-3 px-10">Deal</button>
-        </div>
-        
-        <div id="blackjackActionControls" class="hidden flex justify-center gap-4 flex-wrap">
-            <button id="blackjackHit" class="btn-bet w-32 bg-blue-500 hover:bg-blue-400">Hit</button>
-            <button id="blackjackStand" class="btn-bet w-32 bg-yellow-500 hover:bg-yellow-400">Stand</button>
-            <button id="blackjackDouble" class="btn-bet w-32 bg-purple-500 hover:bg-purple-400">Double</button>
-            <button id="blackjackSplit" class="btn-bet w-32 bg-orange-500 hover:bg-orange-400" disabled>Split</button>
+
+            <!-- Actions Container -->
+            <div class="flex-1 w-full flex justify-center sm:justify-end">
+                <!-- Deal Button -->
+                <button id="blackjackDealButton" class="btn-bet py-3 px-10 w-full sm:w-auto">Deal</button>
+                
+                <!-- Game Actions (Hidden by default) -->
+                <div id="blackjackActionControls" class="hidden flex gap-2 w-full sm:w-auto">
+                    <button id="blackjackHit" class="btn-bet flex-1 bg-blue-500 hover:bg-blue-400">Hit</button>
+                    <button id="blackjackStand" class="btn-bet flex-1 bg-yellow-500 hover:bg-yellow-400">Stand</button>
+                    <button id="blackjackDouble" class="btn-bet flex-1 bg-purple-500 hover:bg-purple-400">Double</button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
