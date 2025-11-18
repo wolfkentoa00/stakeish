@@ -15,143 +15,145 @@
     <!-- Chart.js for the profit graph -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<body class="min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col bg-[#0f212e]">
 
     <!-- Header -->
-    <header class="bg-[#1a2c38] shadow-md w-full sticky top-0 z-20">
+    <header class="bg-[#1a2c38] shadow-md w-full sticky top-0 z-40">
         <div class="container mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center">
+                <div class="flex-shrink-0 flex items-center cursor-pointer" onclick="loadGame('crash')">
                     <span class="text-3xl font-extrabold text-white">
                         Stakeish<span class="text-[#00aaff]">.com</span>
                     </span>
                 </div>
                 
-                <!-- Wallet & Graph -->
+                <!-- Wallet & Graph Toggle -->
                 <div class="flex items-center gap-2">
-                    <button id="graphButton" class="bg-[#2c4051] hover:bg-[#3a5063] text-white font-bold py-2 px-3 rounded-lg shadow-lg transition-colors duration-200" aria-label="Show Stats Graph">
-                        <i class="fas fa-chart-line"></i>
+                    <button id="graphToggleBtn" class="bg-[#2c4051] hover:bg-[#3a5063] text-white font-bold py-2 px-3 rounded-lg shadow-lg transition-colors duration-200 border border-[#3a5063]" title="Toggle Floating Stats">
+                        <i class="fas fa-chart-line text-[#00aaff]"></i> Stats
                     </button>
-                    <button id="walletButton" class="bg-[#2c4051] hover:bg-[#3a5063] text-white font-bold py-2 px-4 rounded-lg shadow-lg transition-colors duration-200">
-                        <span>Balance: $</span>
+                    <div class="bg-[#2c4051] text-white font-bold py-2 px-4 rounded-lg shadow-lg border border-[#3a5063] flex items-center gap-2">
+                        <span class="text-[#00aaff]">$</span>
                         <span id="balanceDisplay">1000.00</span>
-                    </button>
+                        <button id="walletButton" class="ml-2 text-xs bg-[#00aaff] px-2 py-1 rounded hover:bg-[#0088cc]">Wallet</button>
+                    </div>
                 </div>
             </div>
         </div>
     </header>
 
     <!-- Main Content -->
-    <div class="flex-1 flex container mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-6">
+    <div class="flex-1 flex flex-col lg:flex-row container mx-auto px-4 sm:px-6 lg:px-8 py-8 gap-6">
 
         <!-- Sidebar Navigation -->
-        <nav class="w-1/5 2xl:w-1/6 bg-[#1a2c38] rounded-lg shadow-lg p-4 h-max sticky top-24">
-            <ul class="space-y-2">
-                <!-- NEW: Crash Game -->
+        <nav class="w-full lg:w-1/5 2xl:w-1/6 bg-[#1a2c38] rounded-lg shadow-lg p-4 h-max lg:sticky lg:top-24 z-30">
+            <ul class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-1 gap-2">
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="crash">
-                        <i class="fas fa-rocket w-6 text-center"></i> Crash
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="crash">
+                        <i class="fas fa-rocket w-5 text-center text-red-500"></i> Crash
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="limbo">
-                        <i class="fas fa-gavel w-6 text-center"></i> Limbo
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="plinko">
+                        <i class="fas fa-bowling-ball w-5 text-center text-pink-500"></i> Plinko
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="blackjack">
-                        <i class="fas fa-id-card w-6 text-center"></i> Blackjack
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="dice">
+                        <i class="fas fa-dice w-5 text-center text-blue-500"></i> Dice
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="slots">
-                        <i class="fas fa-dice-d6 w-6 text-center"></i> Slots
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="mines">
+                        <i class="fas fa-bomb w-5 text-center text-yellow-500"></i> Mines
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="scratch">
-                        <i class="fas fa-coins w-6 text-center"></i> Scratch Off
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="limbo">
+                        <i class="fas fa-gavel w-5 text-center text-purple-500"></i> Limbo
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051]" data-game="mines">
-                        <i class="fas fa-bomb w-6 text-center"></i> Mines
-                    </button>
-                </li>
-                 <!-- NEW: Other game ideas -->
-                <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 opacity-50 cursor-not-allowed" disabled>
-                        <i class="fas fa-circle-notch w-6 text-center"></i> Plinko (Soon)
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="blackjack">
+                        <i class="fas fa-id-card w-5 text-center text-gray-400"></i> Blackjack
                     </button>
                 </li>
                 <li>
-                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 opacity-50 cursor-not-allowed" disabled>
-                        <i class="fas fa-dice w-6 text-center"></i> Dice (Soon)
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="slots">
+                        <i class="fas fa-dice-d6 w-5 text-center text-orange-500"></i> Slots
+                    </button>
+                </li>
+                <li>
+                    <button class="nav-item w-full text-left px-4 py-3 rounded-lg font-medium transition-colors duration-200 hover:bg-[#2c4051] flex items-center gap-3" data-game="scratch">
+                        <i class="fas fa-coins w-5 text-center text-green-500"></i> Scratch
                     </button>
                 </li>
             </ul>
         </nav>
 
         <!-- Game Area -->
-        <main id="game-area" class="w-4/5 2xl:w-5/6">
+        <main id="game-area" class="w-full lg:w-4/5 2xl:w-5/6 min-h-[600px]">
             <!-- Game content will be loaded here by main.js -->
-            <div class="flex items-center justify-center h-64">
-                <p class="text-2xl text-gray-500 animate-pulse">Loading games...</p>
+            <div class="flex items-center justify-center h-96">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#00aaff]"></div>
             </div>
         </main>
     </div>
 
+    <!-- Floating Profit Graph (Draggable) -->
+    <div id="floatingGraph" class="fixed top-24 right-5 w-80 md:w-96 bg-[#1a2c38] rounded-lg shadow-[0_0_20px_rgba(0,0,0,0.5)] border border-[#3a5063] z-50 hidden flex flex-col overflow-hidden transition-opacity duration-200">
+        <!-- Header (Drag Handle) -->
+        <div id="graphHeader" class="bg-[#2c4051] p-3 cursor-move flex justify-between items-center select-none border-b border-[#3a5063]">
+            <div class="flex items-center gap-2 font-bold text-sm text-white">
+                <i class="fas fa-chart-line text-[#00aaff]"></i> Live Stats
+            </div>
+            <div class="flex gap-2">
+                <button id="clearGraphBtn" class="text-xs bg-red-900/50 hover:bg-red-900 text-red-200 px-2 py-1 rounded transition-colors">Clear</button>
+                <button id="hideGraphBtn" class="text-gray-400 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+        
+        <!-- Content -->
+        <div class="p-4 bg-[#1a2c38]">
+            <div class="h-40 w-full mb-4 relative">
+                <canvas id="profitChart"></canvas>
+            </div>
+            <div class="flex justify-between text-sm border-t border-[#3a5063] pt-3">
+                <div>
+                    <div class="text-gray-500 text-xs uppercase font-bold">Wagered</div>
+                    <div id="graphWagered" class="text-white font-mono font-bold">$0.00</div>
+                </div>
+                <div class="text-right">
+                    <div class="text-gray-500 text-xs uppercase font-bold">Profit</div>
+                    <div id="graphProfit" class="text-white font-mono font-bold">$0.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Deposit Modal -->
-    <div id="depositModal" class="fixed inset-0 z-30 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-[#1a2c38] rounded-lg shadow-2xl p-8 w-full max-w-md mx-4">
+    <div id="depositModal" class="fixed inset-0 z-50 flex items-center justify-center hidden modal-backdrop backdrop-blur-sm">
+        <div class="bg-[#1a2c38] rounded-xl shadow-2xl p-8 w-full max-w-md mx-4 border border-[#3a5063]">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-white">Deposit Funds</h2>
-                <button id="closeModal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
+                <h2 class="text-2xl font-bold text-white">Add Funds</h2>
+                <button id="closeModal" class="text-gray-400 hover:text-white text-2xl transition-colors">&times;</button>
             </div>
             <div>
-                <p class="text-gray-300 mb-4">This is a simulation. Add any amount to your balance for free.</p>
-                <label for="depositAmount" class="block text-sm font-medium text-gray-300 mb-1">Amount</label>
-                <input type="number" id="depositAmount" class="game-input w-full p-3 text-lg" placeholder="e.g., 1000" value="1000">
-                <button id="depositButton" class="btn-bet w-full py-3 rounded-lg text-lg mt-6">
-                    Add to Balance
+                <p class="text-gray-400 text-sm mb-4">This is a simulation. No real money is involved.</p>
+                <label class="block text-xs font-bold text-gray-500 uppercase mb-2">Amount to Deposit</label>
+                <input type="number" id="depositAmount" class="game-input w-full p-3 text-lg mb-4 font-mono" placeholder="1000" value="1000">
+                <button id="depositButton" class="btn-bet w-full py-3 rounded-lg text-lg font-bold shadow-lg">
+                    Deposit
                 </button>
             </div>
         </div>
     </div>
-
-    <!-- NEW: Graph Modal -->
-    <div id="graphModal" class="fixed inset-0 z-30 flex items-center justify-center hidden modal-backdrop">
-        <div class="bg-[#1a2c38] rounded-lg shadow-2xl p-8 w-full max-w-3xl mx-4">
-            <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold text-white">Profit Graph</h2>
-                <button id="closeGraphModal" class="text-gray-400 hover:text-white text-3xl">&times;</button>
-            </div>
-            <div class="bg-[#2c4051] rounded-lg p-4">
-                <canvas id="graphModalCanvas" class="w-full" height="150"></canvas>
-            </div>
-            <div class="mt-6 flex justify-between items-center">
-                <div class="flex gap-6">
-                    <div>
-                        <div class="text-sm text-gray-400">Total Wagered</div>
-                        <div id="graphTotalWagered" class="text-xl font-bold text-white">$0.00</div>
-                    </div>
-                    <div>
-                        <div class="text-sm text-gray-400">Total Profit</div>
-                        <div id="graphTotalProfit" class="text-xl font-bold text-white">$0.00</div>
-                    </div>
-                </div>
-                <button id="clearGraphButton" class="btn-bet-mod py-2 px-4 rounded-lg bg-red-800 hover:bg-red-700">
-                    <i class="fas fa-trash"></i> Clear Graph
-                </button>
-            </div>
-        </div>
-    </div>
-
 
     <!-- Notification/Message Box -->
-    <div id="messageBox" class="fixed bottom-5 right-5 z-40 bg-red-600 text-white p-4 rounded-lg shadow-lg hidden max-w-sm">
-        <span id="messageText"></span>
+    <div id="messageBox" class="fixed bottom-8 right-8 z-[60] bg-[#1a2c38] text-white px-6 py-4 rounded-lg shadow-2xl hidden border-l-4 border-[#00aaff] flex items-center gap-3 transform transition-all duration-300 translate-y-10 opacity-0">
+        <i id="messageIcon" class="fas fa-info-circle"></i>
+        <span id="messageText" class="font-medium"></span>
     </div>
 
     <!-- Main JavaScript File -->
