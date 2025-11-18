@@ -1,71 +1,62 @@
 <div id="game-dice" class="game-container bg-[#1a2c38] rounded-lg shadow-2xl p-6 lg:p-8">
     <h1 class="text-3xl font-bold mb-6 text-white">Dice</h1>
     
-    <div class="bg-[#2c4051] rounded-lg p-6 md:p-10">
-        <!-- Result Display -->
-        <div class="relative w-full h-32 mb-12 bg-[#0f212e] rounded-2xl flex items-center justify-center overflow-hidden border border-[#3a5063]">
-            <!-- Moving slider track background -->
-            <div class="absolute inset-0 flex items-center px-10">
-                <div class="w-full h-2 bg-[#3a5063] rounded-full relative">
-                    <!-- Win zone highlighter -->
-                    <div id="diceWinZone" class="absolute h-full bg-green-500 rounded-full transition-all duration-200" style="left: 0; width: 50%;"></div>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Controls -->
+        <div class="md:col-span-1 bg-[#2c4051] rounded-lg p-6 flex flex-col gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Bet Amount</label>
+                <input type="number" id="diceBetAmount" class="game-input" value="10">
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <button class="btn-bet-mod" onclick="modifyBet('diceBetAmount', 0.5)">/2</button>
+                    <button class="btn-bet-mod" onclick="modifyBet('diceBetAmount', 2)">x2</button>
+                    <button class="btn-bet-mod" onclick="modifyBet('diceBetAmount', 'max')">Max</button>
                 </div>
             </div>
             
-            <!-- The Result Value -->
-            <div id="diceResultDisplay" class="relative z-10 text-6xl font-black text-white opacity-50">50.00</div>
+            <div class="bg-[#1a2c38] p-4 rounded-lg text-center border border-[#3a5063]">
+                <div class="text-gray-400 text-sm">Multiplier</div>
+                <div id="diceMultiplierDisplay" class="text-2xl font-bold text-white">2.00x</div>
+            </div>
             
-            <!-- Result Indicator Arrow (Hidden initially) -->
-            <div id="diceResultArrow" class="absolute top-1/2 w-1 h-16 bg-white shadow-[0_0_15px_rgba(255,255,255,0.8)] transition-all duration-500 hidden" style="left: 50%; transform: translate(-50%, -50%);"></div>
+            <div class="bg-[#1a2c38] p-4 rounded-lg text-center border border-[#3a5063]">
+                <div class="text-gray-400 text-sm">Win Chance</div>
+                <div id="diceChanceDisplay" class="text-2xl font-bold text-white">49.5%</div>
+            </div>
+
+            <button id="playDiceButton" class="btn-bet w-full py-4 text-xl mt-4">Roll Dice</button>
         </div>
 
-        <!-- Controls -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <!-- Game Board -->
+        <div class="md:col-span-2 bg-[#2c4051] rounded-lg p-8 flex flex-col justify-center items-center relative">
             
-            <!-- Sliders Section -->
-            <div class="md:col-span-2 flex flex-col gap-6">
-                 <!-- Roll Over / Under Toggle (Simplified to just Over for now to mimic basic slider) -->
-                 <!-- Main Slider -->
-                 <div class="bg-[#1a2c38] p-4 rounded-lg">
-                    <div class="flex justify-between text-sm text-gray-400 mb-2">
-                        <span>0</span>
-                        <span>100</span>
+            <!-- Big Result Text -->
+            <div id="diceResultText" class="text-7xl font-black text-white mb-12 opacity-50 transition-all">50.00</div>
+            
+            <!-- The Slider Component -->
+            <div class="w-full relative px-4">
+                <!-- Result Marker (Triangle) -->
+                <div id="diceResultMarker" class="hidden" style="left: 50%;"></div>
+                
+                <div class="dice-container w-full">
+                    <div class="dice-track">
+                        <div id="diceWinBar" class="dice-win-bar" style="width: 50%;"></div>
                     </div>
-                    <input type="range" id="diceSlider" min="2" max="98" step="1" value="50" 
-                           class="w-full h-4 bg-[#3a5063] rounded-lg appearance-none cursor-pointer accent-[#00aaff]">
-                 </div>
-                 
-                 <!-- Stats Grid -->
-                 <div class="grid grid-cols-3 gap-4 text-center">
-                     <div class="bg-[#1a2c38] p-3 rounded-lg border border-[#3a5063]">
-                         <div class="text-xs text-gray-400">Multiplier</div>
-                         <input type="text" id="diceMultiplierInput" class="w-full bg-transparent text-center font-bold text-white mt-1 focus:outline-none" readonly value="2.0000x">
-                     </div>
-                     <div class="bg-[#1a2c38] p-3 rounded-lg border border-[#3a5063]">
-                         <div class="text-xs text-gray-400">Roll Over</div>
-                         <div id="diceRollOverValue" class="font-bold text-white mt-1">50.00</div>
-                     </div>
-                     <div class="bg-[#1a2c38] p-3 rounded-lg border border-[#3a5063]">
-                         <div class="text-xs text-gray-400">Win Chance</div>
-                         <div id="diceWinChance" class="font-bold text-white mt-1">50.00%</div>
-                     </div>
-                 </div>
-            </div>
-
-            <!-- Betting Section -->
-            <div class="flex flex-col justify-between gap-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-300 mb-1">Bet Amount</label>
-                    <input type="number" id="diceBetAmount" class="game-input w-full p-3" value="10">
-                    <div class="grid grid-cols-3 gap-2 mt-2">
-                        <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('diceBetAmount', 0.5)">/2</button>
-                        <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('diceBetAmount', 2)">x2</button>
-                        <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('diceBetAmount', 'max')">Max</button>
+                    <!-- Drag Handle (Visual) -->
+                    <div id="diceHandle" style="left: calc(50% - 28px);">
+                        <i class="fas fa-arrows-alt-h"></i>
                     </div>
+                    <!-- Actual Input (Invisible) -->
+                    <input type="range" id="diceSlider" min="2" max="98" step="1" value="50">
                 </div>
-                <button id="playDiceButton" class="btn-bet w-full py-4 rounded-lg text-2xl font-bold shadow-[0_0_20px_rgba(0,170,255,0.3)] hover:shadow-[0_0_30px_rgba(0,170,255,0.5)]">
-                    Roll Dice
-                </button>
+                
+                <div class="flex justify-between text-gray-400 font-bold mt-2 text-sm">
+                    <span>0</span>
+                    <span>25</span>
+                    <span>50</span>
+                    <span>75</span>
+                    <span>100</span>
+                </div>
             </div>
         </div>
     </div>
