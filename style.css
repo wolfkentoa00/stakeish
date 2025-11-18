@@ -20,11 +20,6 @@ a { text-decoration: none; color: inherit; }
     0% { transform: translateY(20px); opacity: 0; }
     100% { transform: translateY(0); opacity: 1; }
 }
-@keyframes flashText {
-    0% { color: #9ca3af; }
-    50% { color: white; }
-    100% { color: #9ca3af; }
-}
 
 /* --- LAYOUT ENGINE --- */
 .flex { display: flex; }
@@ -165,32 +160,33 @@ a { text-decoration: none; color: inherit; }
     animation: spinY 0.1s infinite linear;
 }
 
-/* --- BLACKJACK --- */
+/* --- BLACKJACK FIX --- */
 .hand-wrapper {
     display: flex;
     flex-direction: column;
     align-items: center;
-    min-width: 150px;
+    min-width: 120px;
     margin: 0 10px;
 }
 .hand-active {
     border: 2px dashed #00aaff;
     border-radius: 12px;
-    padding: 10px;
+    padding: 5px;
     background: rgba(0, 170, 255, 0.05);
 }
 .hand-cards {
     display: flex;
     flex-direction: row;
     justify-content: center;
-    perspective: 1000px;
+    align-items: center;
     min-height: 110px;
+    gap: 5px; /* Use Gap instead of negative margin */
 }
 .card {
     background-color: white;
     border-radius: 6px;
-    width: 70px;
-    height: 100px;
+    width: 65px;
+    height: 95px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -200,52 +196,68 @@ a { text-decoration: none; color: inherit; }
     font-family: monospace;
     box-shadow: -2px 2px 6px rgba(0,0,0,0.4);
     animation: slideUp 0.3s ease-out backwards;
-    position: relative;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     user-select: none;
-    margin-right: -45px; /* Negative margin for overlap */
-    transition: margin 0.2s, transform 0.2s;
+    margin: 0; /* Reset margin */
+    transition: transform 0.2s;
 }
-.card:last-child { margin-right: 0; }
-.card:hover { margin-right: -20px; z-index: 10; transform: translateY(-10px); }
+.card:hover { transform: translateY(-5px); }
 .card.red { color: #dc2626; }
 .card.black { color: #1f2937; }
 
-/* --- DICE --- */
+/* --- DICE FIX --- */
 .dice-container {
     position: relative;
     height: 60px;
     background: #0f212e;
     border-radius: 30px;
     border: 2px solid #2c4051;
-    overflow: hidden;
     cursor: pointer;
+    overflow: hidden;
+}
+.dice-track {
+    position: absolute;
+    top: 0; left: 0; w: 100%; h: 100%;
 }
 .dice-win-bar {
     height: 100%;
     background-color: #00e701;
     position: absolute;
-    left: 0;
     top: 0;
-    transition: width 0.05s linear, left 0.05s linear; /* Faster transition */
+    left: 0;
+    border-radius: 30px 0 0 30px;
+    pointer-events: none;
 }
 #diceHandle {
     position: absolute;
-    top: 2px;
+    top: 50%;
+    transform: translate(-50%, -50%);
     width: 56px;
     height: 56px;
     background: white;
     border-radius: 50%;
     box-shadow: 0 0 10px rgba(0,0,0,0.5);
-    z-index: 5;
+    z-index: 20;
     pointer-events: none;
     display: flex;
     align-items: center;
     justify-content: center;
     color: #0f212e;
     font-weight: bold;
-    transition: left 0.05s linear; /* Faster transition */
 }
+#diceResultMarker {
+    position: absolute;
+    top: -12px;
+    transform: translateX(-50%);
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 12px solid white;
+    transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 30;
+}
+#diceResultMarker.win { border-top-color: #00e701; }
+#diceResultMarker.loss { border-top-color: #ef4444; }
 #diceSlider {
     position: absolute;
     width: 100%;
@@ -253,24 +265,47 @@ a { text-decoration: none; color: inherit; }
     opacity: 0;
     cursor: pointer;
     z-index: 10;
+    margin: 0;
 }
 
-/* --- PLINKO --- */
+/* --- PLINKO FIX --- */
 .plinko-bucket {
     border-radius: 4px;
     font-weight: bold;
-    font-size: 0.7rem;
+    font-size: 0.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
     transition: transform 0.1s;
+    height: 30px;
 }
 .plinko-bucket.hit {
     transform: translateY(5px) scale(0.95);
     filter: brightness(1.5);
     box-shadow: 0 0 20px currentColor;
 }
+
+/* --- CASES --- */
+.case-item {
+    width: 100px;
+    height: 100px;
+    flex-shrink: 0;
+    margin: 0 2px;
+    background: #1a2c38;
+    border-bottom: 4px solid #555;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+.case-item img { width: 60px; height: 60px; object-fit: contain; }
+.case-item .val { font-weight: bold; color: white; margin-top: 4px; text-shadow: 0 1px 2px black; }
+.case-item.blue { border-color: #3b82f6; background: radial-gradient(circle, #1e3a8a 0%, #1a2c38 100%); }
+.case-item.purple { border-color: #a855f7; background: radial-gradient(circle, #581c87 0%, #1a2c38 100%); }
+.case-item.red { border-color: #ef4444; background: radial-gradient(circle, #991b1b 0%, #1a2c38 100%); }
+.case-item.gold { border-color: #eab308; background: radial-gradient(circle, #a16207 0%, #1a2c38 100%); }
 
 /* --- FLOATING GRAPH --- */
 #floatingGraph {
