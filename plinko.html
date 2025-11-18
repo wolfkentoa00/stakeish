@@ -1,0 +1,57 @@
+<div id="game-plinko" class="game-container bg-[#1a2c38] rounded-lg shadow-2xl p-6 lg:p-8">
+    <h1 class="text-3xl font-bold mb-6 text-white">Plinko</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Game Controls -->
+        <div class="md:col-span-1 bg-[#2c4051] rounded-lg p-6 flex flex-col gap-4 h-fit">
+            <div>
+                <label for="plinkoBetAmount" class="block text-sm font-medium text-gray-300 mb-1">Bet Amount</label>
+                <input type="number" id="plinkoBetAmount" class="game-input w-full p-2" value="10">
+                <div class="grid grid-cols-3 gap-2 mt-2">
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('plinkoBetAmount', 0.5)">/2</button>
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('plinkoBetAmount', 2)">x2</button>
+                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('plinkoBetAmount', 'max')">Max</button>
+                </div>
+            </div>
+            
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Risk Level</label>
+                <select id="plinkoRisk" class="game-input w-full p-2 cursor-pointer">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-gray-300 mb-1">Rows (8-16)</label>
+                <select id="plinkoRows" class="game-input w-full p-2 cursor-pointer">
+                    <option value="8">8</option>
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="14">14</option>
+                    <option value="16" selected>16</option>
+                </select>
+            </div>
+
+            <button id="playPlinkoButton" class="btn-bet w-full py-3 rounded-lg text-lg mt-4">
+                Drop Ball
+            </button>
+        </div>
+
+        <!-- Plinko Board -->
+        <div class="md:col-span-2 bg-[#0f212e] rounded-lg p-4 flex items-center justify-center overflow-hidden relative min-h-[500px]">
+            <!-- Canvas handles the balls and pins -->
+            <canvas id="plinkoCanvas" class="absolute inset-0 w-full h-full z-10"></canvas>
+            
+            <!-- Multipliers are rendered by JS into this container -->
+            <div id="plinkoMultipliers" class="absolute bottom-4 left-0 w-full flex justify-center gap-1 px-4 z-0">
+                <!-- Buckets injected here -->
+            </div>
+            
+            <div id="plinkoRecentWins" class="absolute top-4 right-4 flex flex-col gap-2 z-20 pointer-events-none">
+                <!-- Recent win bubbles -->
+            </div>
+        </div>
+    </div>
+</div>
