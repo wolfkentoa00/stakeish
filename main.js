@@ -180,7 +180,7 @@ function initCases() {
         // 1. Determine Result
         const resultItem = getRandomItem();
         
-        // 2. Build Strip (approx 100 items, result at ~75)
+        // 2. Build Strip
         strip.innerHTML = '';
         strip.style.transition = 'none';
         strip.style.transform = 'translateX(0px)';
@@ -190,7 +190,11 @@ function initCases() {
         const totalCards = 100;
         
         for(let i=0; i<totalCards; i++) {
-            if(i === resultIndex) strip.appendChild(createCard(resultItem));
+            if(i === resultIndex) {
+                const el = createCard(resultItem);
+                el.id = 'winningCard'; // Tag for later
+                strip.appendChild(el);
+            }
             else strip.appendChild(createCard(getRandomItem()));
         }
         
@@ -198,16 +202,11 @@ function initCases() {
         strip.offsetHeight;
         
         // 3. Animate
-        // Calculate target X. Center of view is 50%. Center of card is cardWidth/2.
-        // We want resultIndex card centered.
-        // ViewWidth/2 - (resultIndex * cardWidth + cardWidth/2)
         const viewWidth = strip.parentElement.offsetWidth;
         const targetX = (viewWidth / 2) - (resultIndex * cardWidth) - (cardWidth / 2);
-        
-        // Add some randomness to position inside the card (+- 40px)
         const randomOffset = Math.floor(Math.random() * 80) - 40;
         
-        strip.style.transition = 'transform 4s cubic-bezier(0.15, 0, 0.10, 1)'; // Ease out cubic
+        strip.style.transition = 'transform 4s cubic-bezier(0.15, 0, 0.10, 1)'; 
         strip.style.transform = `translateX(${targetX + randomOffset}px)`;
         
         setTimeout(() => {
@@ -215,13 +214,16 @@ function initCases() {
             balance += win; updateBalanceDisplay();
             updateGraph(bet, win - bet);
             
+            const winnerEl = document.getElementById('winningCard');
+            if(winnerEl) winnerEl.classList.add('winning-item');
+            
             resDiv.innerHTML = `<div class="text-2xl font-bold" style="color:${resultItem.color==='gold'?'#fbbf24':resultItem.color==='red'?'#ef4444':'#ffffff'}">YOU WON ${resultItem.val}x ($${win.toFixed(2)})</div>`;
             btn.disabled = false;
         }, 4000);
     };
 }
 
-// --- 2. PLINKO (Physics Rewrite) ---
+// --- 2. PLINKO (Physics + Walls) ---
 function initPlinko() {
     const canvas = document.getElementById('plinkoCanvas');
     const ctx = canvas.getContext('2d');
@@ -238,7 +240,6 @@ function initPlinko() {
     const height = rect.height;
     
     const GRAVITY = 0.25;
-    const FRICTION = 0.9;
     const BALL_RADIUS = 5;
     const PIN_RADIUS = 3;
     
@@ -257,13 +258,11 @@ function initPlinko() {
             const pinsInRow = r + 3;
             const rowWidth = (pinsInRow - 1) * gap;
             const xStart = (width - rowWidth) / 2;
-            
             for(let c=0; c<pinsInRow; c++) {
                 pins.push({ x: xStart + c*gap, y: startY + r*gap });
             }
         }
         
-        // Multipliers
         const container = document.getElementById('plinkoMultipliers');
         container.innerHTML = '';
         multipliers = getPlinkoMultipliers(rows, riskInput.value);
@@ -273,7 +272,7 @@ function initPlinko() {
             el.className = 'plinko-bucket';
             el.textContent = `${m}x`;
             el.style.backgroundColor = getPlinkoColor(m);
-            el.style.width = `${gap - 4}px`; // fit gap
+            el.style.width = `${gap - 4}px`; 
             container.appendChild(el);
         });
     }
@@ -282,18 +281,12 @@ function initPlinko() {
         const count = rows + 1;
         const center = Math.floor(count/2);
         const arr = [];
-        
-        // Generalized multiplier logic
         const riskFactor = risk === 'high' ? 0.3 : risk === 'medium' ? 0.1 : 0.05;
         const base = risk === 'high' ? 0.2 : 0.5;
         
         for(let i=0; i<count; i++) {
             const dist = Math.abs(i - center);
             let val = base + (Math.pow(dist, risk === 'high' ? 2.5 : 2) * riskFactor);
-            
-            // Hardcoded Stake-like feel
-            if(risk === 'high' && dist === center) val = 1000; // Just joking, max out at logic
-            
             arr.push(parseFloat(val.toFixed(1)));
         }
         return arr;
@@ -302,19 +295,17 @@ function initPlinko() {
     function loop() {
         ctx.clearRect(0,0,width,height);
         
-        // Pins
         ctx.fillStyle = 'white';
         pins.forEach(p => {
             ctx.beginPath(); ctx.arc(p.x, p.y, PIN_RADIUS, 0, Math.PI*2); ctx.fill();
         });
         
-        // Balls
         balls.forEach((b, i) => {
             b.vy += GRAVITY;
             b.x += b.vx;
             b.y += b.vy;
             
-            // Collision
+            // Pin Collision
             pins.forEach(p => {
                 const dx = b.x - p.x;
                 const dy = b.y - p.y;
@@ -325,52 +316,44 @@ function initPlinko() {
                     const dist = Math.sqrt(distSq);
                     const nx = dx/dist;
                     const ny = dy/dist;
-                    
-                    // Reflect velocity
                     const dot = b.vx*nx + b.vy*ny;
-                    b.vx -= 2*dot*nx;
-                    b.vy -= 2*dot*ny;
-                    
-                    // Add randomness and energy loss
+                    b.vx -= 2*dot*nx; b.vy -= 2*dot*ny;
                     b.vx += (Math.random()-0.5) * 0.5;
                     b.vy *= 0.6; 
-                    
-                    // Push out
-                    const overlap = minDist - dist;
-                    b.x += nx * overlap;
-                    b.y += ny * overlap;
+                    b.x += nx * (minDist - dist); b.y += ny * (minDist - dist);
                 }
             });
+
+            // **FIX: Wall Boundaries**
+            if (b.x < BALL_RADIUS) {
+                b.x = BALL_RADIUS;
+                b.vx *= -0.5;
+            } else if (b.x > width - BALL_RADIUS) {
+                b.x = width - BALL_RADIUS;
+                b.vx *= -0.5;
+            }
             
-            // Render
             ctx.fillStyle = '#fbbf24';
             ctx.beginPath(); ctx.arc(b.x, b.y, BALL_RADIUS, 0, Math.PI*2); ctx.fill();
             
-            // End
             if(b.y > height - 30) {
                 balls.splice(i, 1);
-                
-                // Find bucket
-                const gap = (width - 40) / (parseInt(rowsInput.value) + 2);
-                const buckets = document.querySelectorAll('.plinko-bucket');
-                // Determine index based on x position relative to first bucket
-                // Simple method: map X 0-width to 0-buckets
-                let idx = Math.floor(b.x / (width / multipliers.length));
+                const bucketWidth = width / multipliers.length;
+                let idx = Math.floor(b.x / bucketWidth);
                 if(idx < 0) idx = 0;
                 if(idx >= multipliers.length) idx = multipliers.length - 1;
                 
+                const buckets = document.querySelectorAll('.plinko-bucket');
                 if(buckets[idx]) {
                     buckets[idx].classList.add('hit');
                     setTimeout(()=>buckets[idx].classList.remove('hit'), 200);
                 }
                 
-                const m = multipliers[idx];
-                const win = b.bet * m;
+                const win = b.bet * multipliers[idx];
                 balance += win; updateBalanceDisplay();
                 if(win > b.bet) updateGraph(b.bet, win-b.bet); else updateGraph(b.bet, -b.bet);
             }
         });
-        
         window.plinkoLoop = requestAnimationFrame(loop);
     }
     
@@ -383,15 +366,7 @@ function initPlinko() {
         const bet = parseFloat(document.getElementById('plinkoBetAmount').value);
         if(bet > balance) return;
         balance -= bet; updateBalanceDisplay();
-        
-        // Drop with slight random offset
-        balls.push({
-            x: width/2 + (Math.random()*4-2),
-            y: 20,
-            vx: 0,
-            vy: 0,
-            bet: bet
-        });
+        balls.push({ x: width/2 + (Math.random()*4-2), y: 20, vx: 0, vy: 0, bet: bet });
     };
 }
 function getPlinkoColor(val) {
@@ -401,7 +376,7 @@ function getPlinkoColor(val) {
     return '#3a5063';
 }
 
-// --- 3. BLACKJACK (Fixed) ---
+// --- 3. BLACKJACK (Controls Fix) ---
 function initBlackjack() {
     let deck=[], hands=[], dealerHand={cards:[]}, activeHandIndex=0;
     const els = {
@@ -413,7 +388,7 @@ function initBlackjack() {
         dHand: document.getElementById('blackjackDealerHand'),
         res: document.getElementById('blackjackResult'),
         controls: document.getElementById('blackjackActionControls'),
-        betControls: document.getElementById('blackjackBetControls')
+        betInput: document.getElementById('blackjackBetAmount')
     };
 
     function createDeck() {
@@ -456,7 +431,7 @@ function initBlackjack() {
     }
 
     els.deal.onclick = () => {
-        const bet = parseFloat(document.getElementById('blackjackBetAmount').value);
+        const bet = parseFloat(els.betInput.value);
         if(bet > balance) return;
         balance -= bet; updateBalanceDisplay();
         createDeck();
@@ -469,8 +444,10 @@ function initBlackjack() {
         hands[0].cards.push(draw());
         dealerHand.cards.push({ ...draw(), h: true });
         
-        els.betControls.classList.add('hidden');
+        // **FIX: Hide Deal button, Show Actions, Disable Input**
+        els.deal.classList.add('hidden');
         els.controls.classList.remove('hidden');
+        els.betInput.disabled = true;
         els.res.innerHTML = '';
         render(); checkAuto();
     };
@@ -489,15 +466,11 @@ function initBlackjack() {
     };
     
     els.stand.onclick = stand;
-    
     els.double.onclick = () => {
         const h = hands[activeHandIndex];
         if(balance < h.bet) return;
         balance -= h.bet; updateBalanceDisplay();
-        h.bet *= 2;
-        h.cards.push(draw());
-        render();
-        stand();
+        h.bet *= 2; h.cards.push(draw()); render(); stand();
     };
 
     function stand() {
@@ -530,8 +503,10 @@ function initBlackjack() {
         if(tot > 0) { balance += tot; updateBalanceDisplay(); els.res.innerHTML = `<div class="text-stake-green text-5xl font-black drop-shadow-lg">WON $${tot}</div>`; }
         else els.res.innerHTML = `<div class="text-stake-red text-5xl font-black drop-shadow-lg">DEALER WINS</div>`;
         
+        // **FIX: Show Deal button, Hide Actions, Enable Input**
         els.controls.classList.add('hidden');
-        els.betControls.classList.remove('hidden');
+        els.deal.classList.remove('hidden');
+        els.betInput.disabled = false;
     }
 
     function getScore(cards) {
@@ -542,22 +517,43 @@ function initBlackjack() {
     }
 }
 
-// --- 4. DICE (Fixed UI) ---
+// --- 4. DICE (Flip + Bar Fix) ---
 function initDice() {
     const slider = document.getElementById('diceSlider');
     const handle = document.getElementById('diceHandle');
     const bar = document.getElementById('diceWinBar');
+    const flipBtn = document.getElementById('diceFlipButton');
+    const modeText = document.getElementById('diceModeText');
+    
+    let isRollOver = true;
+    
+    flipBtn.onclick = () => {
+        isRollOver = !isRollOver;
+        modeText.textContent = isRollOver ? "Roll Over" : "Roll Under";
+        update();
+    };
     
     function update() {
-        const val = slider.value;
+        const val = parseFloat(slider.value);
         handle.style.left = `${val}%`;
-        bar.style.width = `${100 - val}%`;
-        bar.style.left = `${val}%`;
         handle.innerHTML = val;
         
-        const chance = 100 - val;
+        // **FIX: Bar Direction based on Mode**
+        if(isRollOver) {
+            bar.style.left = `${val}%`;
+            bar.style.width = `${100 - val}%`;
+            bar.style.borderRadius = "0 30px 30px 0";
+        } else {
+            bar.style.left = '0%';
+            bar.style.width = `${val}%`;
+            bar.style.borderRadius = "30px 0 0 30px";
+        }
+        
+        const chance = isRollOver ? (100 - val) : val;
         document.getElementById('diceChanceDisplay').textContent = chance + '%';
-        document.getElementById('diceMultiplierDisplay').textContent = (99/chance).toFixed(4) + 'x';
+        // Avoid division by zero
+        const safeChance = Math.max(0.01, chance);
+        document.getElementById('diceMultiplierDisplay').textContent = (99/safeChance).toFixed(4) + 'x';
     }
     slider.oninput = update; update();
     
@@ -568,7 +564,9 @@ function initDice() {
         
         const target = parseFloat(slider.value);
         const res = Math.random() * 100;
-        const win = res > target;
+        // **FIX: Win logic based on Mode**
+        const win = isRollOver ? (res > target) : (res < target);
+        const chance = isRollOver ? (100 - target) : target;
         
         const marker = document.getElementById('diceResultMarker');
         const text = document.getElementById('diceResultText');
@@ -583,7 +581,7 @@ function initDice() {
             text.style.transform = 'scale(1.2)';
             
             if(win) {
-                const profit = bet * (99/(100-target));
+                const profit = bet * (99/Math.max(0.01, chance));
                 balance += profit; updateBalanceDisplay();
                 updateGraph(bet, profit-bet);
             } else updateGraph(bet, -bet);
@@ -624,7 +622,6 @@ function initMines() {
         } else {
             t.classList.add('gem'); t.innerHTML = '<i class="fas fa-gem"></i>'; t.disabled=true;
             found++;
-            // mult
             let m = 1; for(let i=0; i<found; i++) m *= (25-mines.length-i)/(25-i); m = 0.99/m;
             document.getElementById('cashoutMinesButton').textContent = `Cashout $${(bet*m).toFixed(2)}`;
             if(found === 25 - mines.length) cashout();
