@@ -2,53 +2,45 @@
     <h1 class="text-3xl font-bold mb-6 text-white">Blackjack</h1>
     
     <!-- Game Table -->
-    <div class="bg-[#2c4051] rounded-lg p-6 min-h-[400px] flex flex-col justify-between">
+    <div class="bg-[#2c4051] rounded-lg p-6 min-h-[400px] flex flex-col justify-between relative border-2 border-[#3a5063]">
         <!-- Dealer Area -->
-        <div>
-            <h2 class="text-xl font-bold text-gray-300">Dealer's Hand</h2>
-            <div id="blackjackDealerScore" class="text-sm text-gray-400 mb-2">&nbsp;</div>
-            <div id="blackjackDealerHand" class="hand-container">
-
+        <div class="text-center">
+            <div class="flex justify-center items-center gap-2 mb-2">
+                <h2 class="text-xl font-bold text-gray-300">Dealer</h2>
+                <div id="dealerScore" class="score-bubble hidden">0</div>
+            </div>
+            <div id="blackjackDealerHand">
+                <!-- Cards go here -->
             </div>
         </div>
 
+        <!-- Result Overlay -->
+        <div id="blackjackResult" class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-5xl font-black z-20 text-white drop-shadow-lg pointer-events-none"></div>
+
         <!-- Player Area -->
-        <div>
-            <h2 class="text-xl font-bold text-gray-300">Your Hand</h2>
-            <div id="blackjackPlayerScore" class="text-sm text-gray-400 mb-2">&nbsp;</div>
-            <div id="blackjackPlayerHand" class="hand-container">
-                <!-- Cards appear here -->
+        <div class="text-center">
+            <div class="flex justify-center items-center gap-2 mb-2">
+                <h2 class="text-xl font-bold text-gray-300">You</h2>
+                <div id="playerScore" class="score-bubble hidden">0</div>
+            </div>
+            <div id="blackjackPlayerHand">
+                <!-- Cards go here -->
             </div>
         </div>
     </div>
 
-    <!-- Game Result Message -->
-    <div id="blackjackResult" class="text-center text-3xl font-bold my-4 h-8">&nbsp;</div>
-
     <!-- Controls -->
     <div class="bg-[#2c4051] rounded-lg p-4 mt-4">
-        <!-- Bet Controls (Visible before deal) -->
         <div id="blackjackBetControls" class="flex flex-col sm:flex-row items-center gap-4">
-            <div class="flex-1 w-full sm:w-auto">
-                <label for="blackjackBetAmount" class="block text-sm font-medium text-gray-300 mb-1">Bet Amount</label>
-                <input type="number" id="blackjackBetAmount" class="game-input w-full p-2" value="10">
-                <div class="grid grid-cols-3 gap-2 mt-2">
-                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('blackjackBetAmount', 0.5)">/2</button>
-                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('blackjackBetAmount', 2)">x2</button>
-                    <button class="btn-bet-mod py-1 rounded-md text-sm" onclick="modifyBet('blackjackBetAmount', 'max')">Max</button>
-                </div>
+            <div class="flex-1 w-full">
+                <input type="number" id="blackjackBetAmount" class="game-input" value="10">
             </div>
-            <button id="blackjackDealButton" class="btn-bet w-full sm:w-auto py-3 px-10 rounded-lg text-lg">
-                Deal
-            </button>
+            <button id="blackjackDealButton" class="btn-bet py-3 px-10">Deal</button>
         </div>
         
-        <!-- Action Controls (Visible during play) -->
-        <div id="blackjackActionControls" class="hidden flex flex-wrap justify-center gap-3">
-            <button id="blackjackHit" class="btn-bet py-3 px-8 rounded-lg text-lg">Hit</button>
-            <button id="blackjackStand" class="btn-bet-mod py-3 px-8 rounded-lg text-lg bg-[#3a5063]">Stand</button>
-            <button id="blackjackDouble" class="btn-bet-mod py-3 px-8 rounded-lg text-lg">Double</button>
-            <button id="blackjackSplit" class="btn-bet-mod py-3 px-8 rounded-lg text-lg">Split</button>
+        <div id="blackjackActionControls" class="hidden flex justify-center gap-4">
+            <button id="blackjackHit" class="btn-bet w-32 bg-blue-500 hover:bg-blue-400">Hit</button>
+            <button id="blackjackStand" class="btn-bet w-32 bg-yellow-500 hover:bg-yellow-400">Stand</button>
         </div>
     </div>
 </div>
